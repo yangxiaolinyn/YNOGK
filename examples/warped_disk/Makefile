@@ -47,8 +47,8 @@ export bin
  
  
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-disk: $(SRC_DIR)/*.c
-	cd $(SRC_DIR) && make disk
+wpddisk: $(SRC_DIR)/*.c
+	cd $(SRC_DIR) && make wpddisk
 
   
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -22,7 +22,7 @@ typedef struct
 !*
 !*/
 /****************************************************************/
-double Fp( ptcl *pt, double p, double n3, double rin, 
+double Fp( ptcl *pt, double p, double n3, double rin, double rout,
 	double paras4, double paras5, double paras6 )
 /****************************************************************/
 {
@@ -33,7 +33,7 @@ double Fp( ptcl *pt, double p, double n3, double rin,
 	//rout = paras(3); //!50.D0  
 	//YNOGK( p, pem, &r_em, &mu_em, &phi_em, 
 	//		&time_em, &sigma_em, &sign_pr, &sign_pth );
-	YNOGKC( ptcl *p, double p );
+	YNOGKC( pt, p );
 
 	// eq. (126) of Yang & Wang (2013).
 	beta = n3 * sin( halfpi * ( pt->r_p - rin ) / ( rout - rin ) );

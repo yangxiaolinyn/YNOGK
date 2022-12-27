@@ -193,7 +193,7 @@ typedef struct {
 
 	unsigned int Situations;
 
-	double r_p, mu_p, phi_p, time_p, sigma_p, sign_pr, sign_pth;
+	double r_p, mu_p, phi_p, time_p, sigma_p, sign_pr_p, sign_pth_p;
 } ptcl;
 
 

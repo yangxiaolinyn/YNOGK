@@ -55,7 +55,7 @@ OBJS =  $(OUT_DIR)/root34.o \
 $(shell if [ ! -e $(OUT_DIR) ];then mkdir -p $(OUT_DIR); fi)
 #$(shell if [ ! -e $(MOD_DIR) ];then mkdir -p $(MOD_DIR); fi) 
 
-disk: $(OBJS)
+wpddisk: $(OBJS)
 	$(FC) $^ -o ../../../$@ -lm -g -O3 -Wall -std=c11
  
  
