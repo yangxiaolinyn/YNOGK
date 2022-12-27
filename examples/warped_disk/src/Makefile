@@ -48,6 +48,7 @@ OBJS =  $(OUT_DIR)/root34.o \
 	$(OUT_DIR)/ynogk_0aspin.o \
 	$(OUT_DIR)/ynogk_theta_part.o \
 	$(OUT_DIR)/ynogkBL.o \
+	$(OUT_DIR)/pemfindingUnit.o \
 	$(OUT_DIR)/main.o
 
 

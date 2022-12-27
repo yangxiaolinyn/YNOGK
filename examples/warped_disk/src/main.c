@@ -1,6 +1,7 @@
 
 //#include <mpi.h>
 #include "ynogkBL.h"
+#include "pemfindingUnit.h"
 
 void disk( ptcl * p, double mudisk, double rdisk_out );
 
