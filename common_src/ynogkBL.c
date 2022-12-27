@@ -69,7 +69,7 @@ void YNOGK( ptcl *p, double pm, double *radi, double *mu, double *phi,
 	Get_Integrals_For_R_Part( p, pm, radi, sign_pr, &aff_r, &time_r, &phi_r );
 	Get_Integrals_For_Theta_Part( p, pm, &phi_t, &time_t, mu, sign_pth, &tm1, &tm2 );  
 
- 
+
 // time coordinate value, equation (74) of Yang & Wang (2012).
 	//printf("here11 = time_r = %f  time_t = %f \n", time_r, time_t);
         *time = time_r + time_t;
@@ -122,6 +122,12 @@ void YNOGK( ptcl *p, double pm, double *radi, double *mu, double *phi,
 		           *phi += + twopi;
 		}
 	}
+	p->r_p = *radi;
+	p->mu_p = *mu;
+	p->sin_p = sqrt( one - p->mu_p * p->mu_p );
+	p->phi_p = *phi;
+	p->time_p = *time;
+	p->sigma_p = *sigma;
 }
 
 
@@ -177,7 +183,8 @@ void YNOGKC( ptcl *p, double pm )
 	Get_Integrals_For_R_Part( p, pm, &p->r_p, &p->sign_pr_p, &aff_r, &time_r, &phi_r );
 	Get_Integrals_For_Theta_Part( p, pm, &phi_t, &time_t, &p->mu_p, &p->sign_pth_p, &tm1, &tm2 );  
 
- 
+
+	p->sin_p = sqrt( one - p->mu_p * p->mu_p );
 // time coordinate value, equation (74) of Yang & Wang (2012).
 	//printf("here11 = time_r = %f  time_t = %f \n", time_r, time_t);
         p->time_p = time_r + time_t;

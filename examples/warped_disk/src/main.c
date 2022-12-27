@@ -47,24 +47,25 @@ double Fp( ptcl *pt, double p, double n3, double rin, double rout,
 }
 
 
-void warpeddisk( ptcl * p, double mudisk, double rdisk_out )
+void warpeddisk( ptcl * pt, double mudisk, double rdisk_out )
 { 
 	double beta, alpha;
 	double deltax, deltay, pem, bomiga, ut_em;
+	double somiga_obs, expnu_obs, exppsi_obs, expmu1_obs, expmu2_obs;
 	double somiga_em, expnu_em, exppsi_em, expmu1_em, expmu2_em;
-	double r_em; //, mu_em, phi_em, time_em, sigma_em, sign_pr, sign_pth;
 	double g;
 	int m, caserange, bisection;
 
-	metricg( p );
+	metricgij( pt->robs, pt->muobs, pt->sinobs, pt->a_spin,
+		&somiga_obs, &expnu_obs, &exppsi_obs, &expmu1_obs, &expmu2_obs );
 
 	// (111) in Yang & Wang (2012).
 	//velocity(1)=-0.D0!expmu1_obs/expnu_obs*robs/(robs**(three/two)+a_spin)!*zero
 	//velocity(2)=0.D0!expmu2_obs/expnu_obs/(robs**(three/two)+a_spin)*cos(45.D0*dtor)!*zero
 	//velocity(3)=0.D0!exppsi_obs/expnu_obs*(one/(robs**(three/two)+a_spin)*sin(45.D0*dtor)-somiga_obs)!*zero   
 
-	center_of_image( p );
-	printf( " beta c = %f \t alphac = %f \n", p->betac, p->alphac );
+	center_of_image( pt );
+	printf( " beta c = %f \t alphac = %f \n", pt->betac, pt->alphac );
 
 	m = 400;
 	deltax = 110.0 / m;
@@ -75,9 +76,10 @@ void warpeddisk( ptcl * p, double mudisk, double rdisk_out )
 	n1 = 4.0;
 	n2 = 4.0;
 	n3 = 0.950; 
-	rin = rms( p->a_spin ); /* rms gives the radius of the 
+	rin = rms( pt->a_spin ); /* rms gives the radius of the 
 				* ISCO (inner most stable circular orbits) */
 	rout = 50.0;
+	gama0 = -50.0;
 	// caserange=4, means muup, mudown and phy1, phy2 are not provided.
 	caserange = 4;
 	// parameters to describe the curved surface of warped disk and sended to
@@ -88,59 +90,59 @@ void warpeddisk( ptcl * p, double mudisk, double rdisk_out )
 	FILE *fp = fopen("./plot/warpdiskg.txt", "w"); 
 
 
+	double beta1, gamma0, V_theta, V_phi, theta_dot, phi_dot;
+	double V, phy0, sin_phy0, cos_phy0, V_the_bar, V_phi_bar;
+	double sq_Theta;
 	//for ( int i = 330; i <= 330; i++ ) {
 	for ( int i = 0; i <= m; i++ ) {
-		beta = p->betac-i*deltay + 55.0;
-		Set_beta( p, beta );
+		beta = pt->betac-i*deltay + 55.0;
+		Set_beta( pt, beta );
 		//for ( int j = 448; j <= 449; j++ ) {
 		for ( int j = 0; j <= m; j++ ) {
-			alpha = p->alphac - j * deltax + 55.0;
-			Set_alpha( p, alpha );
-			lambdaq( p );
+			alpha = pt->alphac - j * deltax + 55.0;
+			Set_alpha( pt, alpha );
+			lambdaq( pt );
 
-			pem = Pemdisk_all( p, mudisk, rdisk_out, rms1, &r_em );
+			//pem = Pemdisk_all( p, mudisk, rdisk_out, rms1, &r_em );
 			//pem = pemfind(f1234,lambda,q,sinobs,muobs,a_spin,robs,scal,&                              
                         //rin,rout,muup,mudown,phy1,phy2,caserange,Fp,paras,bisection)   
 
 			if ( pem != -one && pem != -two ) {
 				YNOGKC( pt, pem );
-				sinp=sqrt(one-mua**two)  
-				//write(unit=6,fmt=*)re,mua,phya
-				beta=n3*sin(PI/two*(re-rin)/(rout-rin))
-				gamma0=paras(4)*dtor+paras(5)*PI*exp(paras(6)*(rin-re)/(rout-rin)) 
 
-				phy0=atan(tan(phya-gamma0)*cos(beta))
-				sin_phy0=sign(sin(phy0),sin(phya-gamma0))
-				cos_phy0=sign(cos(phy0),cos(phya-gamma0))
-				V=re/(re**(three/two)+a_spin)
-				V_theta=V*(-cos(phya-gamma0)*cos(beta)*sin_phy0*mua+sin(phya-gamma0)*cos_phy0*mua&
-							-sin(beta)*sin_phy0*sinp)
-				V_phi=V*(sin(phya-gamma0)*cos(beta)*sin_phy0+cos(phya-gamma0)*cos_phy0) 
+				beta1 = n3 * sin( halfpi * ( pt->r_p - rin ) / ( rout - rin ) );
+				gamma0 = gama0 * dtor + n1 * pi * 
+					exp( n2 * ( rin - pt->r_p ) / ( rout - rin ) );
 
-				theta_dot=V_theta/re
-				phi_dot=V_phi/re/sinp
+				phy0 = atan( tan( pt->phi_p - gamma0 ) * cos( beta1 ) );
+				sin_phy0 = sin(phy0) * sign( sin( pt->phi_p - gamma0 ) );
+				cos_phy0 = cos(phy0) * sign( cos( pt->phi_p - gamma0 ) );
+				V = pt->r_p / ( pow( pt->r_p, (three/two) ) + pt->a_spin );
+				V_theta = V * ( - cos( pt->phi_p - gamma0 ) * cos( beta1 )
+					* sin_phy0 * pt->mu_p + sin( pt->phi_p - gamma0 )
+					* cos_phy0 * pt->mu_p - sin( beta1 ) * sin_phy0 * pt->sin_p );
+				V_phi = V * ( sin( pt->phi_p - gamma0 ) * cos( beta1 )
+					* sin_phy0 + cos( pt->phi_p - gamma0 ) * cos_phy0 );
 
-				//YNOGK( p, pem, &r_em, &mu_em, &phi_em, 
-				//	&time_em, &sigma_em, &sign_pr, &sign_pth ); 
-				 
-				if ( r_em >= rms1 ) {
-					// Keplerian velocity of the particle.    
-					bomiga = one / ( p->a_spin + pow(r_em, (three/two)) );
-					metricgij(r_em, zero, one, p->a_spin, &somiga_em, 
-						&expnu_em, &exppsi_em, &expmu1_em, &expmu2_em);
-					// time component of four momentum of particle.
-					ut_em = one / expnu_em / sqrt( one - 
-						sq(exppsi_em / expnu_em * (bomiga-somiga_em) ) );
-					// redshift formula of (113) of Yang and Wang (2012).
-					g = ( one - p->mt.somiga * p->lambda ) / p->mt.expnu / 
-						p->f1234[4] / ( one - bomiga * p->lambda) / ut_em;
-				  
-					//printf("g = %f \n", g);
-					//printf("ut_em = %f \n", ut_em);
-					fprintf( fp, "%20.16f \n", g );
-				} else {
-					fprintf( fp, "%20.16f \n", zero );
-				}
+				theta_dot = V_theta / pt->r_p;
+				phi_dot = V_phi / pt->r_p / pt->sin_p;
+ 
+				metricgij( pt->r_p, pt->mu_p, pt->sin_p, pt->a_spin,
+					&somiga_em, &expnu_em, &exppsi_em, &expmu1_em, &expmu2_em );
+      
+				V_the_bar = theta_dot * expmu2_em / expnu_em;
+				V_phi_bar = exppsi_em / expnu_em * ( phi_dot - somiga_em );
+				ut_em = one / expnu_em / sqrt( one - sq(V_the_bar) - sq(V_phi_bar) );
+
+				sq_Theta = sqrt( pt->q + pt->a2 * sq( pt->mu_p )
+					- pt->lam2 * sq( pt->mu_p / pt->sin_p ) );
+				// Eq. (110) of Yang & Wang (2012).  
+				g = one / expnu_obs * ( one - pt->lambda * somiga_obs )
+					/ pt->f1234[4] / ut_em / ( one + sq_Theta
+					* sign( - pt->sign_pth_p ) * V_theta / pt->r_p
+					- pt->lambda * V_phi / pt->sin_p / pt->r_p );
+
+				fprintf( fp, "%20.16f \n", g );
 			} else {
 				if ( pem == -one )
 					fprintf( fp, "%20.16f \n", zero );
