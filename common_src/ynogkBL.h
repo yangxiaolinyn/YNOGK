@@ -7,5 +7,8 @@
 //void ynogk( ptcl *this );
 void YNOGK( ptcl *p, double pm, double *radi, double *mu, double *phi, 
 		double *time, double *sigma, double *sign_pr, double *sign_pth );
+
+
+void YNOGKC( ptcl *p, double pm );
  
 #endif

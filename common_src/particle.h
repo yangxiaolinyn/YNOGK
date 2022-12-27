@@ -192,6 +192,8 @@ typedef struct {
 	int first_time_call;
 
 	unsigned int Situations;
+
+	double r_p, mu_p, phi_p, time_p, sigma_p, sign_pr, sign_pth;
 } ptcl;
 
 

@@ -3,7 +3,50 @@
 #include "ynogkBL.h"
 
 void disk( ptcl * p, double mudisk, double rdisk_out );
- 
+
+typedef struct
+{
+	double n3;
+	double rin;
+	double rout; 
+} wpdisk_paras;
+
+
+/*
+!*
+!*
+!*
+!*     C VERSION:  Yang Xiao-lin    2022-12-27.
+!*
+!*
+!*
+!*/
+/****************************************************************/
+double Fp( ptcl *pt, double p, double n3, double rin, 
+	double paras4, double paras5, double paras6 )
+/****************************************************************/
+{
+	double beta, gamma0;
+       
+	//n3 = paras(1); //!0.95D0      
+	//rin = paras(2); //!4.23D0
+	//rout = paras(3); //!50.D0  
+	//YNOGK( p, pem, &r_em, &mu_em, &phi_em, 
+	//		&time_em, &sigma_em, &sign_pr, &sign_pth );
+	YNOGKC( ptcl *p, double p );
+
+	// eq. (126) of Yang & Wang (2013).
+	beta = n3 * sin( halfpi * ( pt->r_p - rin ) / ( rout - rin ) );
+	// eq. (127) of Yang & Wang (2013).
+	gamma0 = paras4 * dtors + paras5 * pi * exp( paras6 * 
+			( rin - pt->r_p ) / ( rout - rin ) );
+	//write(unit=6,fmt=*)pt->r_p,mua,phya,Fp
+	// eq. (128) of Yang & Wang (2013).   
+	return tan( beta ) * cos( pt->phi_p - gamma0 ) + 
+		pt->mu_p / sqrt( one - pt->mu_p * pt->mu_p );
+}
+
+
 void disk( ptcl * p, double mudisk, double rdisk_out )
 { 
 	double beta, alpha;
