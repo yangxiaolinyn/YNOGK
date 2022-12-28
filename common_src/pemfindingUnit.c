@@ -33,8 +33,11 @@ static int NN;
 
 
 static void pemfindcase2( ptcl *p, double *pemfind );
+static void pemfindcase3( ptcl *p, double *pemfind );
+static void pemfindcase4( ptcl *p, double *pemfind );
+static void pemfindcase5( ptcl *p, double *pemfind );
 static double Sectionp( ptcl *pt, double p1, double p2 );
-static double rootfind( ptcl *p, int t1, int t2, double p1, double p2 );
+static double rootfind( ptcl *p, double p1, double p2 );
 static double Bisectionp( ptcl *pt, double p1, double p2 );
 static double NewRapson( ptcl *pt, double p1, double p2 );
 
@@ -149,10 +152,13 @@ void pemfinds( ptcl *p, int *cases, double rins, double routs, double muups,
 			pemfindcase2( p, pemfind );
 			break;
 		case 3:
+			pemfindcase3( p, pemfind );
 			break;
 		case 4:
+			pemfindcase4( p, pemfind );
 			break;
 		case 5:
+			pemfindcase5( p, pemfind );
 			break;
 	}
 } 
@@ -181,9 +187,9 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 			pr = r2p( p, rout, tr1, tr2 );       
 
 			if ( pr <= p1 )
-				*pemfind = rootfind( p, tr1, tr2, p1, p2 );
+				*pemfind = rootfind( p, p1, p2 );
 			else if ( p1 < pr && pr < p2 )
-				*pemfind = rootfind( p, tr1, tr2, pr, p2 );
+				*pemfind = rootfind( p, pr, p2 );
 			else if ( pr >= p2 ) {
 				*pemfind = - one;
 			}
@@ -199,7 +205,7 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 				if ( rout <= r1 )
 					*pemfind = - one;
 				else if ( r1 < rout ) {
-					*pemfind = rootfind( p, tr1, tr2, p1, p2 );
+					*pemfind = rootfind( p, p1, p2 );
 				}
 			}
 		} else {
@@ -211,7 +217,7 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 			p2 = mu2p( p, mu2, t1, t2 );
 			r1 = radius( p, p1 );
 			if ( r1 < rout )
-				*pemfind = rootfind( p, tr1, tr2, p1, p2 );
+				*pemfind = rootfind( p, p1, p2 );
 			else
 				*pemfind = - one;
 
@@ -223,7 +229,7 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 				p2 = mu2p( p, mu2, t1, t2 );
 				r1 = radius( p, p1 );
 				if ( r1 < rout )
-					*pemfind = rootfind( p, tr1, tr2, p1, p2 );
+					*pemfind = rootfind( p, p1, p2 );
 				else
 					*pemfind = - one;
 			}
@@ -241,7 +247,7 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 			p2 = mu2p( p, mu2, t1, t2 );
     
 			if (p2 > p1) {
-				*pemfind = rootfind( p, tr1, tr2, p1, p2 );
+				*pemfind = rootfind( p, p1, p2 );
 				if ( *pemfind == - one ) {
 					t2 = 1;
 					if ( muup > p->mu_tp1 )
@@ -252,7 +258,7 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 					}
 					mu2 = fmin( muup, p->mu_tp1 );
 					p2 = mu2p( p, mu2, t1, t2 );
-					*pemfind = rootfind( p, tr1, tr2, p1, p2 );
+					*pemfind = rootfind( p, p1, p2 );
 				}
 			} else {
 				t2 = 1;
@@ -263,7 +269,7 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 				}
 				p2 = mu2p( p, mu2, t1, t2 );   
 				// write(*,*)'here p1 p2 333 sdf= ',p1, p2
-				*pemfind = rootfind( p, tr1, tr2, p1, p2 );
+				*pemfind = rootfind( p, p1, p2 );
 			}
 		} else {
 			t1 = 0;
@@ -277,7 +283,7 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 			p2 = mu2p( p, mu2, t1, t2 );
 
 			if (p2 > p1) {
-				*pemfind = rootfind( p, tr1, tr2, p1, p2 );
+				*pemfind = rootfind( p, p1, p2 );
 				if ( *pemfind == - one ) {
 					t1 = 1;
 					if ( muup > p->mu_tp1 )
@@ -289,7 +295,7 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 					mu2 = - fmin( muup, p->mu_tp1 );
 					p2 = mu2p( p, mu2, t1, t2 );
     
-					*pemfind = rootfind( p, tr1, tr2, p1, p2 );
+					*pemfind = rootfind( p, p1, p2 );
 				}
 			} else {
 				t1 = 1;
@@ -300,10 +306,83 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 				mu2 = - fmin( muup, p->mu_tp1 );
 				p2 = mu2p( p, mu2, t1, t2 );
       
-				*pemfind = rootfind( p, tr1, tr2, p1, p2 );
+				*pemfind = rootfind( p, p1, p2 );
 			}
 		}
 	}
+}
+
+
+
+static void pemfindcase3( ptcl *p, double *pemfind )
+{
+	double p1, p2;
+	int tr1, tr2;
+
+	tr1 = 0;
+	tr2 = 0;
+	p1 = r2p( p, rout, tr1, tr2 );
+	p2 = r2p( p, rin, tr1, tr2 );  
+	if ( caserange == 4 )
+		*pemfind = rootfind( p, p1, p2 );
+	else
+		*pemfind = Sectionp( p, p1, p2 );
+
+
+	if ( *pemfind == - one ) {
+		tr1 = 1;
+		p1 = r2p( p, rin, tr1, tr2 );
+		p2 = r2p( p, rout, tr1, tr2 );
+
+		if ( caserange == 4 )
+			*pemfind = rootfind( p, p1, p2 );      
+		else      
+			*pemfind = Sectionp( p, p1, p2 );
+			// write(*,*)'ff=',p1,p2,pemfind
+	}
+}
+
+
+
+static void pemfindcase4( ptcl *p, double *pemfind )
+{
+	double p1, p2;
+	int tr1, tr2;
+        
+	tr1 = 0;
+	tr2 = 0;
+	p1 = r2p( p, rout, tr1, tr2 );
+	p2 = r2p( p, rin, tr1, tr2 );
+
+	if ( caserange == 4 )
+		*pemfind = rootfind( p, p1, p2 );       
+	else        
+		*pemfind = Sectionp( p, p1, p2 );
+
+	//the photon will fall into the black hole.
+	if ( *pemfind == - one )
+		*pemfind = - two;
+
+}
+
+
+
+static void pemfindcase5( ptcl *p, double *pemfind )
+{
+	double p1, p2;
+	int tr1, tr2;
+        
+	tr1 = 0;
+	tr2 = 0;
+	p1 = r2p( p, rout, tr1, tr2 );
+              
+	if ( p->r_tp1 > p->rhorizon ) {
+		tr1 = 1;
+		p2 = r2p( p, rout, tr1, tr2 );
+	} else
+		p2 = r2p( p, p->rhorizon, tr1, tr2 );
+
+	*pemfind = rootfind( p, p1, p2 );
 }
 
 
@@ -347,58 +426,69 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 !*/
 double Sectionp( ptcl *pt, double p1s, double p2s )
 {
-	double p1, p2, phya1, phya2;
+	double p1, p2, phya1, phya2, rtn;
 	double deltax = 5.e-5;
+	double mu1, mu2;
 
 	p1 = p1s - deltax;
 	p2 = p2s + deltax;
+	phya1 = zero;
+	phya2 = zero;
 	if ( caserange == 1 || caserange == 3 ) {
 		YNOGKC( pt, p1 );
 		phya1 = pt->phi_p;
 		YNOGKC( pt, p2 );
 		phya2 = pt->phi_p;
 	}
-            If(caserange.eq.1 .or.caserange.eq.2)then        
-                mu1=mucos(p1,f1234(3),f1234(2),lambda,q,sinobs,muobs,a_spin,scal)
-                mu2=mucos(p2,f1234(3),f1234(2),lambda,q,sinobs,muobs,a_spin,scal) 
-                If((mu1-muup)*(mu1-mudown).lt.zero.or.(mu2-muup)*(mu2-mudown).lt.zero.or.&
-                (muup-mu1)*(muup-mu2).lt.zero.or.(mudown-mu1)*(mudown-mu2).lt.zero)then
-                    If(caserange.eq.1 .or.caserange.eq.3)then 
-                        If((phya1-phy1)*(phya1-phy2).lt.zero.or.(phya2-phy1)*(phya2-phy2).lt.zero.or.&
-                        (phy1-phya1)*(phy1-phya2).lt.zero.or.(phy2-phya1)*(phy2-phya2).lt.zero)then
-! the geodesic intersecte the zone defined by r1,r2,mu1,mu2,phy1,phy2,so it has the 
-!possibility to hit the surface of the object.        
-                            Sectionp=rootfind(f1234,lambda,q,sinobs,muobs,a_spin,&
-                                        robs,scal,t1,t2,p1,p2,NN,Fp,paras,orir,oricosth,bisection) !(1,1)
-!write(*,*)'ff=',p1,p2,Sectionp
-                        else 
-!the (phy1,phy2) and (phya1,phya2) has no public point,so we don't consider it.
-                            Sectionp=-one  !(1,1)                
-                        endif
-                    else
-                        Sectionp=rootfind(f1234,lambda,q,sinobs,muobs,a_spin,&
-                                robs,scal,t1,t2,p1,p2,NN,Fp,paras,orir,oricosth,bisection) !(1,0)
-                    endif
-                else 
-!the internal of (mu1,mu2) and (muup,mudown) does not overfold each other,so the geodesic will not hit the
-!surface of the object at the internal (p_rout,p_rout2),which also means the geodesic will never hit the object.
-                    Sectionp=-one          ! so nothing needed to be done.                        
-                endif
-            else
-                If(caserange.eq.1 .or.caserange.eq.3)then
-                    If((phya1-phy1)*(phya1-phy2).lt.zero.or.(phya2-phy1)*(phya2-phy2).lt.zero.or.&
-                    (phy1-phya1)*(phy1-phya2).lt.zero.or.(phy2-phya1)*(phy2-phya2).lt.zero)then
-                        Sectionp=rootfind(f1234,lambda,q,sinobs,muobs,a_spin,robs,scal,t1,t2,p1,p2,NN,Fp,paras,orir,oricosth,bisection) !(0,1)
-                    else 
-!the (phy1,phy2) and (phya1,phya2) has no public points,so we don't consider it.
-                        Sectionp=-one  !(0,1)                
-                    endif
-                else              
-                    Sectionp=rootfind(f1234,lambda,q,sinobs,muobs,a_spin,&
-                                robs,scal,t1,t2,p1,p2,NN,Fp,paras,orir,oricosth,bisection)        ! (0,0)        
-                endif        
-            endif
-        return
+	if ( caserange == 1 || caserange == 2 ) {
+		mu1 = mucos( pt, p1 );
+		mu2 = mucos( pt, p2 );
+		if ( (mu1 - muup)*(mu1 - mudown) < zero || (mu2-muup)*(mu2-mudown) < zero || 
+		(muup - mu1)*(muup - mu2) < zero || (mudown - mu1)*(mudown - mu2) < zero ) {
+
+			if ( caserange == 1 || caserange == 3 ) {
+				if ( ( phya1 - phy1 ) * ( phya1 - phy2 ) < zero
+				  || ( phya2 - phy1 ) * ( phya2 - phy2 ) < zero
+				  || ( phy1 - phya1 ) * ( phy1 - phya2 ) < zero
+				  || ( phy2 - phya1 ) * ( phy2 - phya2 ) < zero )
+					/* the geodesic intersecte the zone defined 
+					by r1,r2,mu1,mu2,phy1,phy2,so it has the 
+					possibility to hit the surface of the object. */
+					rtn = rootfind( pt, p1, p2 ); //(1,1)
+					// write(*,*)'ff=',p1,p2,Sectionp
+		                else 
+					/* the (phy1,phy2) and (phya1,phya2) has 
+					no public point,so we don't consider it.*/
+					rtn = - one;  // (1,1)
+
+			} else
+		                rtn = rootfind( pt, p1, p2 );  //!(1,0)
+
+		} else {
+			/* the internal of (mu1,mu2) and (muup,mudown) does not
+			overfold each other,so the geodesic will not hit the
+			surface of the object at the internal (p_rout,p_rout2),
+			which also means the geodesic will never hit the object.
+			so nothing needed to be done. */
+			rtn = - one;  //    
+		}
+	} else {
+		if ( caserange == 1 || caserange == 3 ) {
+			if ( (phya1-phy1)*(phya1-phy2) < zero
+			  || (phya2-phy1)*(phya2-phy2) < zero
+			  || (phy1-phya1)*(phy1-phya2) < zero
+			  || (phy2-phya1)*(phy2-phya2) < zero )
+				rtn = rootfind( pt, p1, p2 );  // (0,1)
+			else
+				/* the (phy1,phy2) and (phya1,phya2) has no 
+				public points,so we don't consider it. */
+		                rtn = - one;  //(0,1)
+
+		} else
+			rtn = rootfind( pt, p1, p2 );        // (0,0)        
+
+	}
+        return rtn;
 }
 
 
@@ -434,7 +524,7 @@ double Sectionp( ptcl *pt, double p1s, double p2s )
 !*     C VERSION:  Yang Xiao-lin    2022-12-28.
 !*
 !*/
-static double rootfind( ptcl *pt, int t1, int t2, double p1, double p2 )
+static double rootfind( ptcl *pt, double p1, double p2 )
 {
 	double rtfd, deltap, p, f_p, sp1, sp2;;
 	//double const dp = 1.e-5;
