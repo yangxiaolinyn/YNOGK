@@ -23,6 +23,7 @@
 #include "pemfindingUnit.h"
 
  
+static void pemfindcase2( ptcl *p );
 
 
 /*
@@ -91,13 +92,219 @@
 !*
 !*
 !*/
-void pemfinds( ptcl *p, int cases, double rin, double rout, double muup, 
+void pemfinds( ptcl *p, int *cases, double rin, double rout, double muup, 
 	double mudown, double phy1, double phy2, int caserange, double Fp, 
 	double paras, double orir, double oricosth, int bisection, 
 	double pemfind, int NN )
 {
-	radiustp(p);
+	radiustp( p );
+
+	if ( rin > p->rhorizon ) {
+		if( p->r_tp1 >= rout )
+			*cases = 1;
+		else {
+			if ( p->r_tp1 > rin )
+				*cases = 2;
+			else {
+				if ( p->r_tp1 > p->rhorizon )
+					*cases = 3;
+				else
+					*cases = 4;
+			}
+		}
+	} else {
+		*cases=5;
+	}
+
+	switch ( *cases ) {
+		case 1:
+			pemfind = - one;
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		case 4:
+			break;
+		case 5:
+			break;
+	}
 } 
+
+
+
+
+static void pemfindcase2( ptcl *p, double muup )
+{
+	double mu1, mu2;
+	double pr, p1, p2;
+	int t1, t2;
+	int tr1, tr2;
+	mutp( p );
+	if ( p->muobs > muup ) {
+		if ( p->f1234[2] > zero || ( p->mobseqmtp && p->muobs == p->mu_tp1 ) ) {
+			t1 = 0;
+			t2 = 0;
+			mu1 = muup;
+			mu2 = - muup;
+			p1 = mu2p( p, mu1, t1, t2 );
+			p2 = mu2p( p, mu2, t1, t2 );
+
+			tr1 = 0;
+			tr2 = 0;
+			pr = r2p( p, rout, tr1, tr2 );       
+
+			if ( pr <= p1 )
+				pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
+					robs,scal,tr1,tr2,p1,p2,NN,Fp,paras,orir,oricosth,bisection);
+			else if ( p1 < pr && pr < p2 )
+				pemfind=rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
+					robs,scal,tr1,tr2,pr,p2,NN,Fp,paras,orir,oricosth,bisection);
+			else if (pr >= p2) {
+				pemfind = - one;
+			}
+
+			if ( pemfind == -one ) {
+				t2 = 1;
+				mu1 = - muup;
+				mu2 = muup;
+				p1 = mu2p( p, mu1, t1, t2 );
+				p2 = mu2p( p, mu2, t1, t2 );
+				r1 = radius( p, p1 );
+
+				if (rout <= r1)
+					pemfind = - one;
+				else if ( r1 < rout ) {
+					pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
+						robs,scal,tr1,tr2,p1,p2,NN,Fp,paras,orir,oricosth,bisection);
+				}
+			}
+		} else {
+			t1 = 1;
+			t2 = 0;
+			mu1 = muup;
+			mu2 = - muup;
+			p1 = mu2p( p, mu1, t1, t2 );
+			p2 = mu2p( p, mu2, t1, t2 ); 
+			r1 = radius( p, p1 );      
+			if ( r1 < rout )
+				pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
+					robs,scal,tr1,tr2,p1,p2,NN,Fp,paras,orir,oricosth,bisection);
+			else
+				pemfind = - one;
+
+			if ( pemfind == -one ) {
+				t2=1
+				mu1 = - muup
+				mu2 = muup  
+				p1 = mu2p(f1234(3),f1234(2),lambda,q,mu1,sinobs,muobs,a_spin,t1,t2,scal) 
+				p2 = mu2p(f1234(3),f1234(2),lambda,q,mu2,sinobs,muobs,a_spin,t1,t2,scal) 
+				r1 = radius(p1,f1234(1),lambda,q,a_spin,robs,scal) 
+				if (r1 < rout) then          
+					pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
+						robs,scal,tr1,tr2,p1,p2,NN,Fp,paras,orir,oricosth,bisection) 
+				else
+					pemfind = - one;
+			}
+		}
+	else
+		      if (f1234(2)>zero .or. (mobseqmtp .and. muobs == mu_tp1)) then 
+		        t1 = 0
+		        t2 = 0
+		        !mu1 = muup
+		        mu2 = - min(muup, mu_tp1)  
+		        tr1 = 0
+		        tr2 = 0
+		        !p1 = mu2p(f1234(3),f1234(2),lambda,q,mu1,sinobs,muobs,a_spin,t1,t2,scal) 
+		        p1 = r2p(f1234(1),rout,lambda,q,a_spin,robs,scal,tr1,tr2)        
+		        p2 = mu2p(f1234(3),f1234(2),lambda,q,mu2,sinobs,muobs,a_spin,t1,t2,scal)  
+		                 !write(*,*)'here p1 p2 1111= ',p1, p2      
+		        if (p2 > p1) then           
+		            pemfind=rootfind(f1234,lambda,q,sinobs,muobs,a_spin,&
+		                       robs,scal,tr1,tr2,p1,p2,NN,Fp,paras,orir,oricosth,bisection)  
+		            If(pemfind.eq.-one)then
+		                t2=1 
+		                if (muup > mu_tp1) then
+		                    p1 = p2
+		                else
+		                    mu1 = -muup
+		                    p1 = mu2p(f1234(3),f1234(2),lambda,q,mu1,sinobs,muobs,a_spin,t1,t2,scal) 
+		                endif
+		                mu2 = min(muup, mu_tp1)  
+		                p2 = mu2p(f1234(3),f1234(2),lambda,q,mu2,sinobs,muobs,a_spin,t1,t2,scal)    
+		                 !write(*,*)'here p1 p2 2222= ',p1, p2      
+		                pemfind=rootfind(f1234,lambda,q,sinobs,muobs,a_spin,&
+		                            robs,scal,tr1,tr2,p1,p2,NN,Fp,paras,orir,oricosth,bisection)                     
+		            endif 
+		        else 
+		            t2=1 
+		            mu2 = min(muup, mu_tp1)  
+		            if (muup < mu_tp1) then
+		                mu1 = -muup
+		                p1 = mu2p(f1234(3),f1234(2),lambda,q,mu1,sinobs,muobs,a_spin,t1,t2,scal)  
+		            endif
+		            p2 = mu2p(f1234(3),f1234(2),lambda,q,mu2,sinobs,muobs,a_spin,t1,t2,scal)    
+		           !write(*,*)'here p1 p2 333 sdf= ',p1, p2 
+		            pemfind=rootfind(f1234,lambda,q,sinobs,muobs,a_spin,&
+		                        robs,scal,tr1,tr2,p1,p2,NN,Fp,paras,orir,oricosth,bisection)   
+		        endif 
+		      else 
+		        t1 = 0
+		        t2 = 0
+		        mu1 = muup
+		        mu2 = min(muup, mu_tp1)  
+		        tr1 = 0
+		        tr2 = 0
+		        !p1 = mu2p(f1234(3),f1234(2),lambda,q,mu1,sinobs,muobs,a_spin,t1,t2,scal) 
+		        p1 = r2p(f1234(1),rout,lambda,q,a_spin,robs,scal,tr1,tr2)        
+		        p2 = mu2p(f1234(3),f1234(2),lambda,q,mu2,sinobs,muobs,a_spin,t1,t2,scal)
+		        !write(*,*)'here p1 p2 1111= ',p1, p2  
+		        if (p2 > p1) then  
+		            pemfind=rootfind(f1234,lambda,q,sinobs,muobs,a_spin,&
+		                      robs,scal,tr1,tr2,p1,p2,NN,Fp,paras,orir,oricosth,bisection)  
+		            If(pemfind.eq.-one)then
+		                t1=1 
+		                if (muup > mu_tp1) then
+		                    p1 = p2
+		                else
+		                    mu1 = muup
+		                    p1 = mu2p(f1234(3),f1234(2),lambda,q,mu1,sinobs,muobs,a_spin,t1,t2,scal) 
+		                endif
+		                mu2 = -min(muup, mu_tp1)  
+		                p2 = mu2p(f1234(3),f1234(2),lambda,q,mu2,sinobs,muobs,a_spin,t1,t2,scal)    
+		                !write(*,*)'here p1 p2 2222= ',p1, p2      
+		                pemfind=rootfind(f1234,lambda,q,sinobs,muobs,a_spin,&
+		                            robs,scal,tr1,tr2,p1,p2,NN,Fp,paras,orir,oricosth,bisection)                     
+		            endif 
+		        else
+		            t1=1
+		            if (muup < mu_tp1) then
+		                mu1 = muup 
+		                p1 = mu2p(f1234(3),f1234(2),lambda,q,mu1,sinobs,muobs,a_spin,t1,t2,scal)  
+		            endif
+		            mu2 = - min(muup, mu_tp1)  
+		            p2 = mu2p(f1234(3),f1234(2),lambda,q,mu2,sinobs,muobs,a_spin,t1,t2,scal)  
+		            !write(*,*)'here p1 p2 333 sdf= ',p1, p2           
+		            pemfind=rootfind(f1234,lambda,q,sinobs,muobs,a_spin,&
+		                        robs,scal,tr1,tr2,p1,p2,NN,Fp,paras,orir,oricosth,bisection)  
+		        endif 
+		      end if
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
