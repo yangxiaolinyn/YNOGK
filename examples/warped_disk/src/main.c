@@ -88,11 +88,11 @@ void warpeddisk( ptcl * pt, double mudisk, double rdisk_out )
 	// parameters to describe the curved surface of warped disk and sended to
 	// function Fp as dummy variable.
 
-	bisection = false;
+	bisection = 0;
 
 	FILE *fp = fopen("./plot/warpdiskg.txt", "w"); 
 
-	set_parameters( rin, rout, one, -one, zero, twopi, bisection, caserange, 40 );
+	set_parameters( rin, rout, one, -one, zero, twopi, bisection, caserange, 50 );
 	
 
 	double beta1, gamma0, V_theta, V_phi, theta_dot, phi_dot;
@@ -102,6 +102,7 @@ void warpeddisk( ptcl * pt, double mudisk, double rdisk_out )
 	for ( int i = 0; i <= m; i++ ) {
 		beta = pt->betac-i*deltay + 55.0;
 		Set_beta( pt, beta );
+		printf("i = %d \t %f \n", i, beta);
 		for ( int j = 0; j <= m; j++ ) {
 
 			alpha = pt->alphac - j * deltax + 55.0;
@@ -112,6 +113,7 @@ void warpeddisk( ptcl * pt, double mudisk, double rdisk_out )
 			//pem = pemfind(f1234,lambda,q,sinobs,muobs,a_spin,robs,scal,&                              
                         //rin,rout,muup,mudown,phy1,phy2,caserange,Fp,paras,bisection)
 			pemfinds( pt, &pem );
+			//printf("pem = %f \n", pem);
 
 			if ( pem != -one && pem != -two ) {
 				YNOGKC( pt, pem );

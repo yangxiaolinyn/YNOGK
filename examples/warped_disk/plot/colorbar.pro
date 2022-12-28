@@ -188,8 +188,8 @@ ysize = (position(3) - position(1)) * !D.Y_VSIZE
    ; printers.
 
 IF postScriptDevice AND (pscolor NE 1) THEN BEGIN
-   oldcolor = color
-   color = !P.COLOR
+    oldcolor = color
+    ;color = !P.COLOR
 ENDIF
 
    ; Display the color bar in the window. Sizing is
@@ -197,7 +197,7 @@ ENDIF
 
 IF postScriptDevice THEN BEGIN
 
-   TV, bar, xstart, ystart, XSIZE=xsize, YSIZE=ysize
+   TV, -bar, xstart, ystart, XSIZE=xsize, YSIZE=ysize
 
 ENDIF ELSE BEGIN
 
@@ -208,6 +208,7 @@ ENDELSE
 
    ; Annotate the color bar.
 
+    ;color=255
 IF KEYWORD_SET(vertical) THEN BEGIN
 
    IF KEYWORD_SET(right) THEN BEGIN
@@ -249,10 +250,10 @@ ENDIF ELSE BEGIN
 
    ENDIF ELSE BEGIN
 
-      PLOT, [min,max], [min,max], /NODATA, XTICKS=divisions, $
+      PLOT, [min,max], [min,max], /NODATA, XTICKS=divisions, xminor=2,$
          YTICKS=1, XSTYLE=1, YSTYLE=1, $
          POSITION=position, COLOR=color, CHARSIZE=charsize, /NOERASE, $
-         YTICKFORMAT='(A1)', XTICKFORMAT=format, XTICKLEN=0.1, $
+         YTICKFORMAT='(A1)', XTICKFORMAT=format, XTICKLEN=0.2, $
          XRANGE=[min, max], TITLE=title
 
     ENDELSE

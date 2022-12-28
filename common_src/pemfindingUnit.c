@@ -539,7 +539,7 @@ static double rootfind( ptcl *pt, double p1, double p2 )
  
         //p1 = p1 + dp
 	deltap = ( p2 - p1 ) / NN;
-	NNf = floor( NN );
+	NNf = NN;
 	p = p1;
 	f_p = Fp( pt, p );
 
@@ -637,7 +637,8 @@ static double Bisectionp( ptcl *pt, double p1, double p2 )
 		}
 		if ( fc == zero ) break;
 		if ( counter > 200 ) break;
-		//write(unit=6,fmt=*)'fc=',f1,fc,f2,p1,pc,p2
+		//printf("fc = %f %f %f %f %f %f  \n ", f1, fc, f2, p1, pc, p2);
+		//printf("fc = %d \n", counter);
 		counter += 1;
 	} while( fabs( p2 - p1 ) / p1 > 1.e-5 );
  
@@ -685,6 +686,8 @@ static double NewRapson( ptcl *pt, double p1, double p2 )
 		ptn = ptn - dp;
 		//If((ptn-p1)*(p2-ptn).lt.zero)then
 		//write(unit=6,fmt=*)'ptn jumps out of brakets [p1, p2]!'
+		//printf("fc = %d \n", k);
+		//printf("fc = %f %f \n ", dp, ptn);
 		if ( fabs( dp ) < pacc )
 		        return ptn;
 
