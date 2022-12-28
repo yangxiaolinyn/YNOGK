@@ -43,6 +43,24 @@ static double NewRapson( ptcl *pt, double p1, double p2 );
 
 extern double Fp( ptcl *pt, double p );
 
+
+
+void set_parameters( double rins, double routs, double muups, double mudowns,
+	double phy1s, double phy2s, int bisections, int caseranges, int NNs )
+{
+	rin = rins;
+	rout = routs;
+	muup = muups;
+	mudown = mudowns;
+	phy1 = phy1s;
+	phy2 = phy2s;
+	bisection = bisections;
+	caserange = caseranges;
+	NN = NNs;	
+}
+
+
+
 /*
 !*
 !*
@@ -109,42 +127,31 @@ extern double Fp( ptcl *pt, double p );
 !*
 !*
 !*/
-void pemfinds( ptcl *p, int *cases, double rins, double routs, double muups, 
-	double mudowns, double phy1s, double phy2s, int caseranges, 
-	double *parass, int bisections, double *pemfind, int NNs )
+void pemfinds( ptcl *p, double *pemfind )
 {
-	rin = rins;
-	rout = routs;
-	muup = muups;
-	mudown = mudowns;
-	phy1 = phy1s;
-	phy2 = phy2s;
-	caserange = caseranges;
-	bisection = bisections;
-	NN = NNs;
 	//paras = parass;
 
+	int cases;
 	radiustp( p );
-
 
 	if ( rin > p->rhorizon ) {
 		if( p->r_tp1 >= rout )
-			*cases = 1;
+			cases = 1;
 		else {
 			if ( p->r_tp1 > rin )
-				*cases = 2;
+				cases = 2;
 			else {
 				if ( p->r_tp1 > p->rhorizon )
-					*cases = 3;
+					cases = 3;
 				else
-					*cases = 4;
+					cases = 4;
 			}
 		}
 	} else {
-		*cases=5;
+		cases=5;
 	}
 
-	switch ( *cases ) {
+	switch ( cases ) {
 		case 1:
 			*pemfind = - one;
 			break;

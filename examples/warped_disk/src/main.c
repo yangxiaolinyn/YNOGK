@@ -53,7 +53,7 @@ double Fp( ptcl *pt, double p )
 void warpeddisk( ptcl * pt, double mudisk, double rdisk_out )
 { 
 	double beta, alpha;
-	double deltax, deltay, pem, bomiga, ut_em;
+	double deltax, deltay, pem, ut_em;
 	double somiga_obs, expnu_obs, exppsi_obs, expmu1_obs, expmu2_obs;
 	double somiga_em, expnu_em, exppsi_em, expmu1_em, expmu2_em;
 	double g;
@@ -92,23 +92,26 @@ void warpeddisk( ptcl * pt, double mudisk, double rdisk_out )
 
 	FILE *fp = fopen("./plot/warpdiskg.txt", "w"); 
 
+	set_parameters( rin, rout, one, -one, zero, twopi, bisection, caserange, 40 );
+	
 
 	double beta1, gamma0, V_theta, V_phi, theta_dot, phi_dot;
 	double V, phy0, sin_phy0, cos_phy0, V_the_bar, V_phi_bar;
 	double sq_Theta;
-	//for ( int i = 330; i <= 330; i++ ) {
+
 	for ( int i = 0; i <= m; i++ ) {
 		beta = pt->betac-i*deltay + 55.0;
 		Set_beta( pt, beta );
-		//for ( int j = 448; j <= 449; j++ ) {
 		for ( int j = 0; j <= m; j++ ) {
+
 			alpha = pt->alphac - j * deltax + 55.0;
 			Set_alpha( pt, alpha );
 			lambdaq( pt );
 
 			//pem = Pemdisk_all( p, mudisk, rdisk_out, rms1, &r_em );
 			//pem = pemfind(f1234,lambda,q,sinobs,muobs,a_spin,robs,scal,&                              
-                        //rin,rout,muup,mudown,phy1,phy2,caserange,Fp,paras,bisection)   
+                        //rin,rout,muup,mudown,phy1,phy2,caserange,Fp,paras,bisection)
+			pemfinds( pt, &pem );
 
 			if ( pem != -one && pem != -two ) {
 				YNOGKC( pt, pem );
@@ -146,11 +149,14 @@ void warpeddisk( ptcl * pt, double mudisk, double rdisk_out )
 					- pt->lambda * V_phi / pt->sin_p / pt->r_p );
 
 				fprintf( fp, "%20.16f \n", g );
+
 			} else {
+
 				if ( pem == -one )
 					fprintf( fp, "%20.16f \n", zero );
 				else
 					fprintf( fp, "%20.16f \n", 0.10 );
+
 			}
 		}
 	}
