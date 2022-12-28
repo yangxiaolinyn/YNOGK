@@ -27,6 +27,11 @@ static double rin, rout;
 static double muup, mudown;
 static double phy1, phy2;
 
+//static double oricosth;
+static int bisection, caserange;
+static int NN;
+static strpara *paras;
+
 
 static void pemfindcase2( ptcl *p, double *pemfind );
 
@@ -98,9 +103,8 @@ static void pemfindcase2( ptcl *p, double *pemfind );
 !*
 !*/
 void pemfinds( ptcl *p, int *cases, double rins, double routs, double muups, 
-	double mudowns, double phy1s, double phy2s, int caserange, double Fp, 
-	double paras, double orir, double oricosth, int bisection, 
-	double pemfind, int NN )
+	double mudowns, double phy1s, double phy2s, int caseranges, 
+	double *parass, int bisections, double *pemfind, int NNs )
 {
 	rin = rins;
 	rout = routs;
@@ -108,7 +112,13 @@ void pemfinds( ptcl *p, int *cases, double rins, double routs, double muups,
 	mudown = mudowns;
 	phy1 = phy1s;
 	phy2 = phy2s;
+	caserange = caseranges;
+	bisection = bisections;
+	NN = NNs;
+	paras = parass;
+
 	radiustp( p );
+
 
 	if ( rin > p->rhorizon ) {
 		if( p->r_tp1 >= rout )
@@ -129,7 +139,7 @@ void pemfinds( ptcl *p, int *cases, double rins, double routs, double muups,
 
 	switch ( *cases ) {
 		case 1:
-			pemfind = - one;
+			*pemfind = - one;
 			break;
 		case 2:
 			break;
@@ -166,11 +176,12 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 			pr = r2p( p, rout, tr1, tr2 );       
 
 			if ( pr <= p1 )
-				pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
-					robs,scal,tr1,tr2,p1,p2,NN,Fp,paras,orir,oricosth,bisection);
+				*pemfind = rootfind( p, tr1, tr2, p1, p2 );
+				*pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
+					robs,scal,tr1,tr2,p1,p2,NN,Fp,paras, bisection);
 			else if ( p1 < pr && pr < p2 )
-				pemfind=rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
-					robs,scal,tr1,tr2,pr,p2,NN,Fp,paras,orir,oricosth,bisection);
+				pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
+					robs,scal,tr1,tr2,pr,p2,NN,Fp,paras, bisection);
 			else if (pr >= p2) {
 				pemfind = - one;
 			}
@@ -187,7 +198,7 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 					pemfind = - one;
 				else if ( r1 < rout ) {
 					pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
-						robs,scal,tr1,tr2,p1,p2,NN,Fp,paras,orir,oricosth,bisection);
+						robs,scal,tr1,tr2,p1,p2,NN,Fp,paras, bisection);
 				}
 			}
 		} else {
@@ -200,7 +211,7 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 			r1 = radius( p, p1 );
 			if ( r1 < rout )
 				pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
-					robs,scal,tr1,tr2,p1,p2,NN,Fp,paras,orir,oricosth,bisection);
+					robs,scal,tr1,tr2,p1,p2,NN,Fp,paras, bisection);
 			else
 				pemfind = - one;
 
@@ -213,7 +224,7 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 				r1 = radius( p, p1 );
 				if ( r1 < rout )
 					pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
-						robs,scal,tr1,tr2,p1,p2,NN,Fp,paras,orir,oricosth,bisection);
+						robs,scal,tr1,tr2,p1,p2,NN,Fp,paras, bisection);
 				else
 					pemfind = - one;
 			}
@@ -232,7 +243,7 @@ static void pemfindcase2( ptcl *p, double *pemfind )
     
 			if (p2 > p1) {
 				pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin, 
-					robs,scal,tr1,tr2,p1,p2,NN,Fp,paras,orir,oricosth,bisection);
+					robs,scal,tr1,tr2,p1,p2,NN,Fp,paras, bisection);
 				if ( pemfind == - one ) {
 					t2 = 1;
 					if ( muup > mu_tp1 )
@@ -244,7 +255,7 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 					mu2 = min( muup, mu_tp1 );
 					p2 = mu2p( p, mu2, t1, t2 );     
 					pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
-						robs,scal,tr1,tr2,p1,p2,NN,Fp,paras,orir,oricosth,bisection);
+						robs,scal,tr1,tr2,p1,p2,NN,Fp,paras, bisection);
 				}
 			} else {
 				t2 = 1;
@@ -256,7 +267,7 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 				p2 = mu2p( p, mu2, t1, t2 );   
 				// write(*,*)'here p1 p2 333 sdf= ',p1, p2 
 				pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
-					robs,scal,tr1,tr2,p1,p2,NN,Fp,paras,orir,oricosth,bisection)
+					robs,scal,tr1,tr2,p1,p2,NN,Fp,paras, bisection)
 			}
 		} else {
 			t1 = 0;
@@ -271,7 +282,7 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 
 			if (p2 > p1) {
 				pemfind=rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
-					robs,scal,tr1,tr2,p1,p2,NN,Fp,paras,orir,oricosth,bisection);
+					robs,scal,tr1,tr2,p1,p2,NN,Fp,paras, bisection);
 				if ( pemfind == - one ) {
 					t1 = 1;
 					if ( muup > p->mu_tp1 )
@@ -284,7 +295,7 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 					p2 = mu2p( p, mu2, t1, t2 );
     
 					pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
-						robs,scal,tr1,tr2,p1,p2,NN,Fp,paras,orir,oricosth,bisection);
+						robs,scal,tr1,tr2,p1,p2,NN,Fp,paras, bisection);
 				}
 			} else {
 				t1 = 1;
@@ -296,7 +307,7 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 				p2 = mu2p( p, mu2, t1, t2 );
       
 				pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
-					robs,scal,tr1,tr2,p1,p2,NN,Fp,paras,orir,oricosth,bisection);
+					robs,scal,tr1,tr2,p1,p2,NN,Fp,paras, bisection);
 			}
 		}
 	}
@@ -336,81 +347,71 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 !*
 !*
 !*
-!*
-!*
-!*
 !*     C VERSION:  Yang Xiao-lin    2022-12-28.
 !*
 !*/
-
-!********************************************************************************* 
-      Function rootfind(f1234,lambda,q,sinobs,muobs,a_spin,robs,scal,&
-                           t1,t2,p1,p2,NN,Fp,paras,orir,oricosth,bisection)
-!********************************************************************************* 
-        use BLcoordinate
-        implicit none
-        Double precision :: rootfind,a,B,lambda,q,sinobs,muobs,a_spin,&
-                        robs,scal,p1,p2,NN,sp1,sp2,f_p_old,&
-                        f_p,p,paras(10),f1234(4),deltap,dp, orir(N+1), oricosth(N+1)
-        Double precision ,external :: Fp
-        parameter (dp=1.D-5)
-        integer NNf,k,t1,t2
-        logical :: bisection
+double rootfind( ptcl *p, int t1, int t2, double p1, double p2, strpara *paras );
+{
+	double rtfd, a,B,lambda,q,sinobs,muobs,a_spin,
+                        robs,scal,p1,p2,NN,sp1,sp2,f_p_old,
+                        f_p, p, f1234(4),deltap;
+	double const dp = 1.e-5;
+	int NNf, k, t1, t2;
  
-        !p1 = p1 + dp
-        deltap=(p2-p1)/NN
-        NNf=floor(NN)
-        p=p1
-        f_p=Fp(p,f1234,lambda,q,sinobs,muobs,a_spin,robs,scal,t1,t2,paras,orir,oricosth)
-        !write(*,*)'NNf=',f_p
-        !write(unit=6,fmt=*)p1,p2,f_p
-        If(f_p.eq.0.D0)then
-                rootfind=p
-                return
-        endif 
-        If(f_p.lt.zero)then
-                k=0
-                Do while(.true.)			
-                        If(f_p.eq.zero)then
-                            rootfind=p
-                            return
-                        endif 
-                        If(f_p.gt.zero .or.k.gt.NNf)exit 
-                        k=k+1
-                        p=p1+deltap*k
-                        f_p=Fp(p,f1234,lambda,q,sinobs,muobs,a_spin,robs,scal,t1,t2,paras,orir,oricosth)
-                Enddo                                        
-        else
-                k=0        
-                Do while(.true.)
-                        If(f_p.eq.zero)then
-                            rootfind=p
-                            return
-                        endif
-                        If(f_p.lt.zero.or.k.gt.NNf)exit 
-                        k=k+1
-                        p=deltap*k+p1
-                        f_p=Fp(p,f1234,lambda,q,sinobs,muobs,a_spin,robs,scal,t1,t2,paras,orir,oricosth)        
-                Enddo
-        endif
- !write(unit=6,fmt=*)'f_p=',f_p,k,deltap,p-deltap,p
-                If(k.le.NNf)then
-                    sp1=p-deltap
-                    sp2=p      
-! Using bisection or Newton Raphson method to find roots on interval (sp1, sp2).   
-                    IF(bisection)THEN
-                        rootfind=Bisectionp(f1234,lambda,q,sinobs,muobs,&
-                                a_spin,robs,scal,t1,t2,sp1,sp2,Fp,paras,orir,oricosth)
-                    else
-                        rootfind=NewRapson(f1234,lambda,q,sinobs,muobs,&
-                                a_spin,robs,scal,t1,t2,sp1,sp2,Fp,paras,orir,oricosth) 
-                    endif
-                else
-!In (p1,p2) no roots were found!
-                        rootfind=-1.D0        
-                endif
-        return
-      End Function rootfind
+        //p1 = p1 + dp
+	deltap = ( p2 - p1 ) / NN;
+	NNf = floor( NN );
+	p = p1;
+	f_p = Fp( p, f1234, lambda, q, sinobs, muobs, a_spin, robs, scal, t1, t2, paras );
+	//write(*,*)'NNf=',f_p
+	//write(unit=6,fmt=*)p1,p2,f_p
+	if ( f_p == 0.0 ) {
+                rtfd = p;
+                return (rtfd);
+	}
+	if ( f_p < zero ) {
+                k = 0;
+                do {
+			if (f_p.eq.zero)
+                            return p;
+
+			if (f_p.gt.zero .or.k.gt.NNf)
+				break;
+                        k += 1;
+                        p = p1 + deltap * k;
+                        f_p = Fp( p,f1234,lambda,q,sinobs,muobs,a_spin,robs,scal,t1,t2,paras );
+		} while (true);
+	} else {
+		k=0        
+		do {
+			if (f_p.eq.zero) {
+                            return p;
+			}
+			if ( f_p < zero || k > NNf )
+				break;
+			k = k + 1;
+			p = deltap * k + p1;
+			f_p = Fp( p,f1234,lambda,q,sinobs,muobs,a_spin,robs,scal,t1,t2,paras );
+		} while(true);
+	}
+	// write(unit=6,fmt=*)'f_p=',f_p,k,deltap,p-deltap,p
+	if (k.le.NNf) {
+		sp1 = p - deltap;
+		sp2 = p;
+		// Using bisection or Newton Raphson method to find roots on interval (sp1, sp2).   
+		if ( bisection )
+			rtfd = Bisectionp(f1234,lambda,q,sinobs,muobs,
+				a_spin,robs,scal,t1,t2,sp1,sp2,Fp,paras );
+		else
+			rtfd = NewRapson(f1234,lambda,q,sinobs,muobs,
+				a_spin,robs,scal,t1,t2,sp1,sp2,Fp,paras );
+
+	else
+		// On interval (p1, p2) no roots are found!
+		rtfd = - 1.0;
+	}
+        return rtfd;
+}
 
 
 
