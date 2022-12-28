@@ -13,6 +13,9 @@ typedef struct
 } wpdisk_paras;
 
 
+double n1, n2, n3;
+double gama0, rin, rout;
+
 /*
 !*
 !*
@@ -23,8 +26,7 @@ typedef struct
 !*
 !*/
 /****************************************************************/
-double Fp( ptcl *pt, double p, double n3, double rin, double rout,
-	double paras4, double paras5, double paras6 )
+double Fp( ptcl *pt, double p )
 /****************************************************************/
 {
 	double beta, gamma0;
@@ -39,7 +41,7 @@ double Fp( ptcl *pt, double p, double n3, double rin, double rout,
 	// eq. (126) of Yang & Wang (2013).
 	beta = n3 * sin( halfpi * ( pt->r_p - rin ) / ( rout - rin ) );
 	// eq. (127) of Yang & Wang (2013).
-	gamma0 = paras4 * dtors + paras5 * pi * exp( paras6 * 
+	gamma0 = gama0 * dtors + n1 * pi * exp( n2 * 
 			( rin - pt->r_p ) / ( rout - rin ) );
 	//write(unit=6,fmt=*)pt->r_p,mua,phya,Fp
 	// eq. (128) of Yang & Wang (2013).   
@@ -73,7 +75,7 @@ void warpeddisk( ptcl * pt, double mudisk, double rdisk_out )
 	deltay = 110.0 / m;
 
 
-	double rin, rout, gama0, n1, n2, n3;
+	//double rin, rout, gama0, n1, n2, n3;
 	n1 = 4.0;
 	n2 = 4.0;
 	n3 = 0.950; 

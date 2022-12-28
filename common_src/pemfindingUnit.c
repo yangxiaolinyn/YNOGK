@@ -30,11 +30,15 @@ static double phy1, phy2;
 //static double oricosth;
 static int bisection, caserange;
 static int NN;
-static strpara *paras;
 
 
 static void pemfindcase2( ptcl *p, double *pemfind );
+static double Sectionp( ptcl *pt, double p1, double p2 );
+static double rootfind( ptcl *p, int t1, int t2, double p1, double p2 );
+static double Bisectionp( ptcl *pt, double p1, double p2 );
+static double NewRapson( ptcl *pt, double p1, double p2 );
 
+extern double Fp( ptcl *pt, double p );
 
 /*
 !*
@@ -115,7 +119,7 @@ void pemfinds( ptcl *p, int *cases, double rins, double routs, double muups,
 	caserange = caseranges;
 	bisection = bisections;
 	NN = NNs;
-	paras = parass;
+	//paras = parass;
 
 	radiustp( p );
 
@@ -142,6 +146,7 @@ void pemfinds( ptcl *p, int *cases, double rins, double routs, double muups,
 			*pemfind = - one;
 			break;
 		case 2:
+			pemfindcase2( p, pemfind );
 			break;
 		case 3:
 			break;
@@ -158,7 +163,7 @@ void pemfinds( ptcl *p, int *cases, double rins, double routs, double muups,
 static void pemfindcase2( ptcl *p, double *pemfind )
 {
 	double mu1, mu2;
-	double pr, p1, p2;
+	double pr, p1, p2, r1;
 	int t1, t2;
 	int tr1, tr2;
 	mutp( p );
@@ -177,16 +182,13 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 
 			if ( pr <= p1 )
 				*pemfind = rootfind( p, tr1, tr2, p1, p2 );
-				*pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
-					robs,scal,tr1,tr2,p1,p2,NN,Fp,paras, bisection);
 			else if ( p1 < pr && pr < p2 )
-				pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
-					robs,scal,tr1,tr2,pr,p2,NN,Fp,paras, bisection);
-			else if (pr >= p2) {
-				pemfind = - one;
+				*pemfind = rootfind( p, tr1, tr2, pr, p2 );
+			else if ( pr >= p2 ) {
+				*pemfind = - one;
 			}
 
-			if ( pemfind == -one ) {
+			if ( *pemfind == -one ) {
 				t2 = 1;
 				mu1 = - muup;
 				mu2 = muup;
@@ -194,11 +196,10 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 				p2 = mu2p( p, mu2, t1, t2 );
 				r1 = radius( p, p1 );
 
-				if (rout <= r1)
-					pemfind = - one;
+				if ( rout <= r1 )
+					*pemfind = - one;
 				else if ( r1 < rout ) {
-					pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
-						robs,scal,tr1,tr2,p1,p2,NN,Fp,paras, bisection);
+					*pemfind = rootfind( p, tr1, tr2, p1, p2 );
 				}
 			}
 		} else {
@@ -210,12 +211,11 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 			p2 = mu2p( p, mu2, t1, t2 );
 			r1 = radius( p, p1 );
 			if ( r1 < rout )
-				pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
-					robs,scal,tr1,tr2,p1,p2,NN,Fp,paras, bisection);
+				*pemfind = rootfind( p, tr1, tr2, p1, p2 );
 			else
-				pemfind = - one;
+				*pemfind = - one;
 
-			if ( pemfind == -one ) {
+			if ( *pemfind == -one ) {
 				t2 = 1;
 				mu1 = - muup;
 				mu2 = muup;
@@ -223,18 +223,17 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 				p2 = mu2p( p, mu2, t1, t2 );
 				r1 = radius( p, p1 );
 				if ( r1 < rout )
-					pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
-						robs,scal,tr1,tr2,p1,p2,NN,Fp,paras, bisection);
+					*pemfind = rootfind( p, tr1, tr2, p1, p2 );
 				else
-					pemfind = - one;
+					*pemfind = - one;
 			}
 		}
-	else
-		if ( P->f1234[2] > zero || ( P->mobseqmtp && P->muobs == P->mu_tp1 ) ) {
+	} else {
+		if ( p->f1234[2] > zero || ( p->mobseqmtp && p->muobs == p->mu_tp1 ) ) {
 			t1 = 0;
 			t2 = 0;
 			//mu1 = muup
-			mu2 = - min( muup, mu_tp1 );
+			mu2 = - fmin( muup, p->mu_tp1 );
 			tr1 = 0;
 			tr2 = 0;
 			//p1 = mu2p(f1234(3),f1234(2),lambda,q,mu1,sinobs,muobs,a_spin,t1,t2,scal)
@@ -242,38 +241,35 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 			p2 = mu2p( p, mu2, t1, t2 );
     
 			if (p2 > p1) {
-				pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin, 
-					robs,scal,tr1,tr2,p1,p2,NN,Fp,paras, bisection);
-				if ( pemfind == - one ) {
+				*pemfind = rootfind( p, tr1, tr2, p1, p2 );
+				if ( *pemfind == - one ) {
 					t2 = 1;
-					if ( muup > mu_tp1 )
+					if ( muup > p->mu_tp1 )
 						p1 = p2;
 					else {
 						mu1 = - muup;
 						p1 = mu2p( p, mu1, t1, t2 );
 					}
-					mu2 = min( muup, mu_tp1 );
-					p2 = mu2p( p, mu2, t1, t2 );     
-					pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
-						robs,scal,tr1,tr2,p1,p2,NN,Fp,paras, bisection);
+					mu2 = fmin( muup, p->mu_tp1 );
+					p2 = mu2p( p, mu2, t1, t2 );
+					*pemfind = rootfind( p, tr1, tr2, p1, p2 );
 				}
 			} else {
 				t2 = 1;
-				mu2 = min( muup, mu_tp1 );
-				if ( muup < mu_tp1 ) {
+				mu2 = fmin( muup, p->mu_tp1 );
+				if ( muup < p->mu_tp1 ) {
 					mu1 = - muup;
 					p1 = mu2p( p, mu1, t1, t2 );
 				}
 				p2 = mu2p( p, mu2, t1, t2 );   
-				// write(*,*)'here p1 p2 333 sdf= ',p1, p2 
-				pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
-					robs,scal,tr1,tr2,p1,p2,NN,Fp,paras, bisection)
+				// write(*,*)'here p1 p2 333 sdf= ',p1, p2
+				*pemfind = rootfind( p, tr1, tr2, p1, p2 );
 			}
 		} else {
 			t1 = 0;
 			t2 = 0;
 			mu1 = muup;
-			mu2 = min(muup, mu_tp1);
+			mu2 = fmin(muup, p->mu_tp1);
 			tr1 = 0;
 			tr2 = 0;
 			//p1 = mu2p(f1234(3),f1234(2),lambda,q,mu1,sinobs,muobs,a_spin,t1,t2,scal)
@@ -281,9 +277,8 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 			p2 = mu2p( p, mu2, t1, t2 );
 
 			if (p2 > p1) {
-				pemfind=rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
-					robs,scal,tr1,tr2,p1,p2,NN,Fp,paras, bisection);
-				if ( pemfind == - one ) {
+				*pemfind = rootfind( p, tr1, tr2, p1, p2 );
+				if ( *pemfind == - one ) {
 					t1 = 1;
 					if ( muup > p->mu_tp1 )
 						p1 = p2;
@@ -291,23 +286,21 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 						mu1 = muup;
 						p1 = mu2p( p, mu1, t1, t2 );
 					}
-					mu2 = - min( muup, p->mu_tp1 );
+					mu2 = - fmin( muup, p->mu_tp1 );
 					p2 = mu2p( p, mu2, t1, t2 );
     
-					pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
-						robs,scal,tr1,tr2,p1,p2,NN,Fp,paras, bisection);
+					*pemfind = rootfind( p, tr1, tr2, p1, p2 );
 				}
 			} else {
 				t1 = 1;
-				if ( muup < mu_tp1 ) {
+				if ( muup < p->mu_tp1 ) {
 					mu1 = muup;
 					p1 = mu2p( p, mu1, t1, t2 ); 
 				}
-				mu2 = - min( muup, mu_tp1 );
+				mu2 = - fmin( muup, p->mu_tp1 );
 				p2 = mu2p( p, mu2, t1, t2 );
       
-				pemfind = rootfind(f1234,lambda,q,sinobs,muobs,a_spin,
-					robs,scal,tr1,tr2,p1,p2,NN,Fp,paras, bisection);
+				*pemfind = rootfind( p, tr1, tr2, p1, p2 );
 			}
 		}
 	}
@@ -315,7 +308,98 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 
 
 
+/*
+!*
+!*
+!*     PURPOSE:  To judge whether a geodesic intersects with the surface of object or emission region
+!*               which are described by function f(p). The space range of surface of object or
+!*               emission region is (rin, rout) in radius, (mudown,muup) in poloidal and 
+!*               (phy1, phy2) in azimuthal. If geodesic has no intersections on those intervals
+!*               then it will no intersects with the surface and emission region, a special       
+!*               value -1.D0 will be returned.
+!* 
+!*     INPUTS:   f1234(1:4)-----array of p_r, p_theta, p_phi, p_t which are the four momentum of the photon. 
+!*               lambda,q-------motion constants, defined by lambda=L_z/E, q=Q/E^2. 
+!*               sinobs,muobs---sinobs=sin(\theta_{obs}), muobs=cos(\theta_{obs}), where 
+!*                              \theta_{obs} is the inclination angle of the observer.
+!*               a_spin---------spin of black hole, on interval (-1,1).  
+!*               robs-----------radial coordinate of observer or initial position of photon. 
+!*               scal-----------a dimentionless parameter to control the size of the images.
+!*                              Which is usually be set to 1.D0. 
+!*               t1,t2----------Number of photon meets turning points r_tp1 and r_tp2 respectively.
+!*               p1,p2----------roots may hidden inside interval (p1,p2).
+!*               muup,mudown,phy1,phy2,
+!*               caserange,Fp,paras,bisection--------see instructions in pemfind.  
+!*
+!*     OUTPUTS:  Sectionp-------value of root of equation f(p)=0 for p.  
+!*                              If Sectionp=-1.D0, No roots were found no interval (p1, p2).     
+!*     ROUTINES CALLED: phi, mucos, rootfind. 
+!*     ACCURACY:   Machine.    
+!*     AUTHOR:     Yang & Wang (2012)  
+!*     DATE WRITTEN:  6 Jan 2012
+!*     REVISIONS: 
+!*
+!*
+!*
+!*
+!*     C VERSION:  Yang Xiao-lin    2022-12-28.
+!*
+!*/
+double Sectionp( ptcl *pt, double p1s, double p2s )
+{
+	double p1, p2, phya1, phya2;
+	double deltax = 5.e-5;
 
+	p1 = p1s - deltax;
+	p2 = p2s + deltax;
+	if ( caserange == 1 || caserange == 3 ) {
+		YNOGKC( pt, p1 );
+		phya1 = pt->phi_p;
+		YNOGKC( pt, p2 );
+		phya2 = pt->phi_p;
+	}
+            If(caserange.eq.1 .or.caserange.eq.2)then        
+                mu1=mucos(p1,f1234(3),f1234(2),lambda,q,sinobs,muobs,a_spin,scal)
+                mu2=mucos(p2,f1234(3),f1234(2),lambda,q,sinobs,muobs,a_spin,scal) 
+                If((mu1-muup)*(mu1-mudown).lt.zero.or.(mu2-muup)*(mu2-mudown).lt.zero.or.&
+                (muup-mu1)*(muup-mu2).lt.zero.or.(mudown-mu1)*(mudown-mu2).lt.zero)then
+                    If(caserange.eq.1 .or.caserange.eq.3)then 
+                        If((phya1-phy1)*(phya1-phy2).lt.zero.or.(phya2-phy1)*(phya2-phy2).lt.zero.or.&
+                        (phy1-phya1)*(phy1-phya2).lt.zero.or.(phy2-phya1)*(phy2-phya2).lt.zero)then
+! the geodesic intersecte the zone defined by r1,r2,mu1,mu2,phy1,phy2,so it has the 
+!possibility to hit the surface of the object.        
+                            Sectionp=rootfind(f1234,lambda,q,sinobs,muobs,a_spin,&
+                                        robs,scal,t1,t2,p1,p2,NN,Fp,paras,orir,oricosth,bisection) !(1,1)
+!write(*,*)'ff=',p1,p2,Sectionp
+                        else 
+!the (phy1,phy2) and (phya1,phya2) has no public point,so we don't consider it.
+                            Sectionp=-one  !(1,1)                
+                        endif
+                    else
+                        Sectionp=rootfind(f1234,lambda,q,sinobs,muobs,a_spin,&
+                                robs,scal,t1,t2,p1,p2,NN,Fp,paras,orir,oricosth,bisection) !(1,0)
+                    endif
+                else 
+!the internal of (mu1,mu2) and (muup,mudown) does not overfold each other,so the geodesic will not hit the
+!surface of the object at the internal (p_rout,p_rout2),which also means the geodesic will never hit the object.
+                    Sectionp=-one          ! so nothing needed to be done.                        
+                endif
+            else
+                If(caserange.eq.1 .or.caserange.eq.3)then
+                    If((phya1-phy1)*(phya1-phy2).lt.zero.or.(phya2-phy1)*(phya2-phy2).lt.zero.or.&
+                    (phy1-phya1)*(phy1-phya2).lt.zero.or.(phy2-phya1)*(phy2-phya2).lt.zero)then
+                        Sectionp=rootfind(f1234,lambda,q,sinobs,muobs,a_spin,robs,scal,t1,t2,p1,p2,NN,Fp,paras,orir,oricosth,bisection) !(0,1)
+                    else 
+!the (phy1,phy2) and (phya1,phya2) has no public points,so we don't consider it.
+                        Sectionp=-one  !(0,1)                
+                    endif
+                else              
+                    Sectionp=rootfind(f1234,lambda,q,sinobs,muobs,a_spin,&
+                                robs,scal,t1,t2,p1,p2,NN,Fp,paras,orir,oricosth,bisection)        ! (0,0)        
+                endif        
+            endif
+        return
+}
 
 
 
@@ -350,21 +434,18 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 !*     C VERSION:  Yang Xiao-lin    2022-12-28.
 !*
 !*/
-double rootfind( ptcl *p, int t1, int t2, double p1, double p2, strpara *paras );
+static double rootfind( ptcl *pt, int t1, int t2, double p1, double p2 )
 {
-	double rtfd, a,B,lambda,q,sinobs,muobs,a_spin,
-                        robs,scal,p1,p2,NN,sp1,sp2,f_p_old,
-                        f_p, p, f1234(4),deltap;
-	double const dp = 1.e-5;
-	int NNf, k, t1, t2;
+	double rtfd, deltap, p, f_p, sp1, sp2;;
+	//double const dp = 1.e-5;
+	int NNf, k;
  
         //p1 = p1 + dp
 	deltap = ( p2 - p1 ) / NN;
 	NNf = floor( NN );
 	p = p1;
-	f_p = Fp( p, f1234, lambda, q, sinobs, muobs, a_spin, robs, scal, t1, t2, paras );
-	//write(*,*)'NNf=',f_p
-	//write(unit=6,fmt=*)p1,p2,f_p
+	f_p = Fp( pt, p );
+
 	if ( f_p == 0.0 ) {
                 rtfd = p;
                 return (rtfd);
@@ -372,41 +453,39 @@ double rootfind( ptcl *p, int t1, int t2, double p1, double p2, strpara *paras )
 	if ( f_p < zero ) {
                 k = 0;
                 do {
-			if (f_p.eq.zero)
+			if (f_p == zero)
                             return p;
 
-			if (f_p.gt.zero .or.k.gt.NNf)
+			if (f_p > zero || k > NNf)
 				break;
                         k += 1;
                         p = p1 + deltap * k;
-                        f_p = Fp( p,f1234,lambda,q,sinobs,muobs,a_spin,robs,scal,t1,t2,paras );
+                        f_p = Fp( pt, p );
 		} while (true);
 	} else {
-		k=0        
+		k = 0;
 		do {
-			if (f_p.eq.zero) {
+			if (f_p == zero) {
                             return p;
 			}
 			if ( f_p < zero || k > NNf )
 				break;
 			k = k + 1;
 			p = deltap * k + p1;
-			f_p = Fp( p,f1234,lambda,q,sinobs,muobs,a_spin,robs,scal,t1,t2,paras );
+			f_p = Fp( pt, p );
 		} while(true);
 	}
 	// write(unit=6,fmt=*)'f_p=',f_p,k,deltap,p-deltap,p
-	if (k.le.NNf) {
+	if (k <= NNf) {
 		sp1 = p - deltap;
 		sp2 = p;
 		// Using bisection or Newton Raphson method to find roots on interval (sp1, sp2).   
 		if ( bisection )
-			rtfd = Bisectionp(f1234,lambda,q,sinobs,muobs,
-				a_spin,robs,scal,t1,t2,sp1,sp2,Fp,paras );
+			rtfd = Bisectionp( pt, sp1, sp2 );
 		else
-			rtfd = NewRapson(f1234,lambda,q,sinobs,muobs,
-				a_spin,robs,scal,t1,t2,sp1,sp2,Fp,paras );
+			rtfd = NewRapson( pt, sp1, sp2 );
 
-	else
+	} else {
 		// On interval (p1, p2) no roots are found!
 		rtfd = - 1.0;
 	}
@@ -416,8 +495,105 @@ double rootfind( ptcl *p, int t1, int t2, double p1, double p2, strpara *paras )
 
 
 
+/*
+!*     PURPOSE:  To search roots on interval (p1, p2) by bisenction method for 
+!*               equation Fp(p)=0.
+!*     INPUTS:   Parameters descriptions ---------see instructions in pemfind.  
+!*
+!*     OUTPUTS:  Bisectionp-------value of root of equation f(p)=0 for p.        
+!*     ROUTINES CALLED: phi, mucos, rootfind. 
+!*     ACCURACY:   Machine.    
+!*     AUTHOR:     Yang & Wang (2012)  
+!*     DATE WRITTEN:  6 Jan 2012
+!*     REVISIONS: ****************************************** 
+!*
+!*
+!*
+!*
+!*     C VERSION:  Yang Xiao-lin    2022-12-28.
+!*
+!*
+!*/
+static double Bisectionp( ptcl *pt, double p1, double p2 )
+{
+	double pc, f1, f2, fc;
+	int counter;
+        
+	pc = ( p1 + p2 ) / two;
+	f1 = Fp( pt, p1 );
+	f2 = Fp( pt, p2 );
+	fc = Fp( pt, pc );
+
+        counter = 0;
+	do {
+		if ( f1 * fc > zero ) {
+			p1 = pc;
+			f1 = fc;
+			pc = ( p1 + p2 ) / two;
+			fc = Fp( pt, pc );
+		}
+		if ( f2 * fc > zero ) {
+			p2 = pc;
+			f2 = fc;
+			pc = ( p1 + p2 ) / two;
+			fc = Fp( pt, pc );
+		}
+		if ( fc == zero ) break;
+		if ( counter > 200 ) break;
+		//write(unit=6,fmt=*)'fc=',f1,fc,f2,p1,pc,p2
+		counter += 1;
+	} while( fabs( p2 - p1 ) / p1 > 1.e-5 );
+ 
+        return pc;
+}
 
 
+
+
+/*
+!*     PURPOSE:  To search roots on interval (p1, p2) by Newton Raphson method for 
+!*               equation Fp(p)=0.
+!*     INPUTS:   Parameters descriptions ---------see instructions in pemfind.  
+!*
+!*     OUTPUTS:  NewRapson-------value of root of equation f(p)=0 for p.        
+!*     ROUTINES CALLED: phi, mucos, rootfind. 
+!*     ACCURACY:   Machine.    
+!*     AUTHOR:     Yang & Wang (2012)  
+!*     DATE WRITTEN:  6 Jan 2012
+!*
+!*
+!*
+!*     C VERSION:  Yang Xiao-lin    2022-12-28.
+!*
+!*/
+static double NewRapson( ptcl *pt, double p1, double p2 )
+{
+	double ptn, dp, f_p, f_pj, dfp, h, temp;
+	double pj;
+	int k;
+	double const kmax = 30, pacc = 1.e-2, EPS = 1.e-5;
+
+        ptn = ( p2 + p1 ) / two;
+	for ( k = 1; k <= kmax; k++ ) {
+		temp = ptn;
+		h = EPS * fabs( temp );
+		if ( h == zero ) h = EPS;
+		pj = temp + h;
+		h = pj - temp;
+		f_p = Fp( pt, temp );
+		f_pj = Fp( pt, pj );
+
+		dfp = ( f_pj - f_p ) / h;
+		dp = f_p / dfp;
+		ptn = ptn - dp;
+		//If((ptn-p1)*(p2-ptn).lt.zero)then
+		//write(unit=6,fmt=*)'ptn jumps out of brakets [p1, p2]!'
+		if ( fabs( dp ) < pacc )
+		        return ptn;
+
+	}
+	return ptn;
+}
 
 
 
