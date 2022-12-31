@@ -131,6 +131,7 @@ void pemfinds( ptcl *p, double *pemfind )
 {
 	//paras = parass;
 
+	NN = 20;
 	int cases;
 	radiustp( p );
 
@@ -151,21 +152,41 @@ void pemfinds( ptcl *p, double *pemfind )
 		cases=5;
 	}
 
+	//printf("pem1 = %d \n", cases);
 	switch ( cases ) {
 		case 1:
 			*pemfind = - one;
 			break;
 		case 2:
-			pemfindcase2( p, pemfind );
+			do {
+				pemfindcase2( p, pemfind );
+				if ( *pemfind > zero || *pemfind == -one || *pemfind == -two ) break;
+				NN = NN * 2;
+			} while (1);
 			break;
 		case 3:
-			pemfindcase3( p, pemfind );
+			do {
+				pemfindcase3( p, pemfind );
+				if ( *pemfind > zero || *pemfind == -one || *pemfind == -two ) break;
+				NN = NN * 2;
+			} while (1);
 			break;
 		case 4:
-			pemfindcase4( p, pemfind );
+			do {
+				//printf(" pfind1 = %f   NN = %d \n", *pemfind, NN );
+				pemfindcase4( p, pemfind );
+				if ( NN > 20000 )exit(0);
+				//printf(" pfind2 = %f   NN = %d \n", *pemfind, NN );
+				if ( *pemfind > zero || *pemfind == -one || *pemfind == -two ) break;
+				NN = NN * 2;
+			} while (1);
 			break;
 		case 5:
-			pemfindcase5( p, pemfind );
+			do {
+				pemfindcase5( p, pemfind );
+				if ( *pemfind > zero || *pemfind == -one || *pemfind == -two ) break;
+				NN = NN * 2;
+			} while (1);
 			break;
 	}
 } 
@@ -361,9 +382,11 @@ static void pemfindcase4( ptcl *p, double *pemfind )
 	p1 = r2p( p, rout, tr1, tr2 );
 	p2 = r2p( p, rin, tr1, tr2 );
 
-	if ( caserange == 4 )
-		*pemfind = rootfind( p, p1, p2 );       
-	else        
+	if ( caserange == 4 ) {
+		//printf("pemfindcase4 = %f  %f \n", p1, p2);
+		*pemfind = rootfind( p, p1, p2 ); 
+		//printf("pemfindcase42 = %f \n", *pemfind);      
+	} else        
 		*pemfind = Sectionp( p, p1, p2 );
 
 	//the photon will fall into the black hole.
@@ -570,17 +593,22 @@ static double rootfind( ptcl *pt, double p1, double p2 )
 			k = k + 1;
 			p = deltap * k + p1;
 			f_p = Fp( pt, p );
+			//printf("rootfind2 = %d %d %f %f %f %f \n", k, NNf, f_p, Fp( pt, p1 ), Fp( pt, p ), Fp( pt, p2 ) );
 		} while(true);
 	}
-	// write(unit=6,fmt=*)'f_p=',f_p,k,deltap,p-deltap,p
+
+	//printf("ttsf = %d  %f  %f \n", k, p, f_p);
+
 	if (k <= NNf) {
 		sp1 = p - deltap;
 		sp2 = p;
 		// Using bisection or Newton Raphson method to find roots on interval (sp1, sp2).   
 		if ( bisection )
 			rtfd = Bisectionp( pt, sp1, sp2 );
-		else
+		else {
+			//printf("rootfind2 = %f  %f \n", sp1, sp2);
 			rtfd = NewRapson( pt, sp1, sp2 );
+		}
 
 	} else {
 		// On interval (p1, p2) no roots are found!
@@ -673,24 +701,29 @@ static double NewRapson( ptcl *pt, double p1, double p2 )
 
         ptn = ( p2 + p1 ) / two;
 	for ( k = 1; k <= kmax; k++ ) {
+		//printf("tt1 = %d  %f \n", k, ptn);
 		temp = ptn;
 		h = EPS * fabs( temp );
 		if ( h == zero ) h = EPS;
 		pj = temp + h;
 		h = pj - temp;
+		//printf("tt2 = %f  %f  %f \n", pj, h, temp);
+		if ( temp < zero || pj < zero )
+		        return -fabs(temp);
+
 		f_p = Fp( pt, temp );
+
 		f_pj = Fp( pt, pj );
+
 
 		dfp = ( f_pj - f_p ) / h;
 		dp = f_p / dfp;
 		ptn = ptn - dp;
 		//If((ptn-p1)*(p2-ptn).lt.zero)then
 		//write(unit=6,fmt=*)'ptn jumps out of brakets [p1, p2]!'
-		//printf("fc = %d \n", k);
-		//printf("fc = %f %f \n ", dp, ptn);
+		//printf("fc2 = %f %f \n ", dp, ptn);
 		if ( fabs( dp ) < pacc )
 		        return ptn;
-
 	}
 	return ptn;
 }

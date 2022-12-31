@@ -68,7 +68,7 @@ ly=501
   ratio=1.;3.529
    l=22. & xxss=l*(ratio) & yyss=l
    ;xoff=(LL-xxss)/2.,yoff=(3*LL/2.-yyss)/2.,
-   device,filename='warp1_2.ps',xsize=xxss,ysize=yyss,bits_per_pixel=8,/color,xoff=(21.5-xxss)/2.0,yoff=(30-yyss)/2.,$
+   device,filename='warp1_3.ps',xsize=xxss,ysize=yyss,bits_per_pixel=8,/color,xoff=(21.5-xxss)/2.0,yoff=(30-yyss)/2.,$
    set_font='Helvetica Italic', /tt_font
   ; set_font='isolatin1'
    XX=Findgen(101)

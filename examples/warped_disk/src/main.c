@@ -92,7 +92,7 @@ void warpeddisk( ptcl * pt, double mudisk, double rdisk_out )
 
 	FILE *fp = fopen("./plot/warpdiskg.txt", "w"); 
 
-	set_parameters( rin, rout, one, -one, zero, twopi, bisection, caserange, 50 );
+	set_parameters( rin, rout, one, -one, zero, twopi, bisection, caserange, 200 );
 	
 
 	double beta1, gamma0, V_theta, V_phi, theta_dot, phi_dot;
@@ -102,18 +102,19 @@ void warpeddisk( ptcl * pt, double mudisk, double rdisk_out )
 	for ( int i = 0; i <= m; i++ ) {
 		beta = pt->betac-i*deltay + 55.0;
 		Set_beta( pt, beta );
-		printf("i = %d \t %f \n", i, beta);
+		//printf("i = %d \t %f \n", i, beta);
 		for ( int j = 0; j <= m; j++ ) {
-
 			alpha = pt->alphac - j * deltax + 55.0;
 			Set_alpha( pt, alpha );
+			//printf("j = %d \t %f \n", j, alpha);
 			lambdaq( pt );
 
 			//pem = Pemdisk_all( p, mudisk, rdisk_out, rms1, &r_em );
 			//pem = pemfind(f1234,lambda,q,sinobs,muobs,a_spin,robs,scal,&                              
                         //rin,rout,muup,mudown,phy1,phy2,caserange,Fp,paras,bisection)
+			//printf("pem1 = %f \n", pem);
 			pemfinds( pt, &pem );
-			//printf("pem = %f \n", pem);
+			//printf("pem2 = %f \n", pem);
 
 			if ( pem != -one && pem != -two ) {
 				YNOGKC( pt, pem );
@@ -144,11 +145,21 @@ void warpeddisk( ptcl * pt, double mudisk, double rdisk_out )
 
 				sq_Theta = sqrt( pt->q + pt->a2 * sq( pt->mu_p )
 					- pt->lam2 * sq( pt->mu_p / pt->sin_p ) );
-				// Eq. (110) of Yang & Wang (2012).  
-				g = one / expnu_obs * ( one - pt->lambda * somiga_obs )
+				// Eq. (110) of Yang & Wang (2012). 
+
+				//dmu = mucos( pt, pem + 1.e-6) - mucos( pt, pem );
+
+				/*g = one / expnu_obs * ( one - pt->lambda * somiga_obs )
 					/ pt->f1234[4] / ut_em / ( one + sq_Theta
 					* sign( - pt->sign_pth_p ) * V_theta / pt->r_p
+					- pt->lambda * V_phi / pt->sin_p / pt->r_p );*/
+
+				//printf("sign = %f  %f \n", sign(dmu), pt->sign_pth_p );
+				g = one / expnu_obs * ( one - pt->lambda * somiga_obs )
+					/ pt->f1234[4] / ut_em / ( one + sq_Theta
+					* sign( pt->sign_pth_p ) * V_theta / pt->r_p
 					- pt->lambda * V_phi / pt->sin_p / pt->r_p );
+
 
 				fprintf( fp, "%20.16f \n", g );
 
@@ -172,8 +183,8 @@ int main( int argc, char *argv[])
 	double a_spin, rini, muobs, sinobs, scal, Vobs[3];
 	a_spin = 0.9980;
 	rini = 4.e16;
-	muobs = cos( 86.0 * dtor );
-	sinobs = sin( 86.0 * dtor );
+	muobs = cos( 20.0 * dtor );
+	sinobs = sin( 20.0 * dtor );
 	scal = 1.0;
 
 	Vobs[0] = zero;
