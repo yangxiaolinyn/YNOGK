@@ -32,10 +32,11 @@ static int bisection, caserange;
 static int NN;
 
 
-static void pemfindcase2( ptcl *p, double *pemfind );
+void pemfindcase2( ptcl *p, double *pemfind );
 static void pemfindcase3( ptcl *p, double *pemfind );
 static void pemfindcase4( ptcl *p, double *pemfind );
 static void pemfindcase5( ptcl *p, double *pemfind );
+static void pemfindcase2new( ptcl *p, double *pemfind );
 static double Sectionp( ptcl *pt, double p1, double p2 );
 static double rootfind( ptcl *p, double p1, double p2 );
 static double Bisectionp( ptcl *pt, double p1, double p2 );
@@ -152,14 +153,14 @@ void pemfinds( ptcl *p, double *pemfind )
 		cases=5;
 	}
 
-	//printf("pem1 = %d \n", cases);
+	//printf("pem1 cases = %d  %f \n", cases, p->r_tp1);
 	switch ( cases ) {
 		case 1:
 			*pemfind = - one;
 			break;
 		case 2:
 			do {
-				pemfindcase2( p, pemfind );
+				pemfindcase2new( p, pemfind );
 				if ( *pemfind > zero || *pemfind == -one || *pemfind == -two ) break;
 				NN = NN * 2;
 			} while (1);
@@ -192,15 +193,35 @@ void pemfinds( ptcl *p, double *pemfind )
 } 
 
 
+         
+
+static void pemfindcase2new( ptcl *p, double *pemfind )
+{
+	int tr1, tr2;
+	double p1, p2;
+
+	tr1 = 0;
+	tr2 = 0;
+	p1 = r2p( p, rout, tr1, tr2 );
+	tr1 = 1;
+	p2 = r2p( p, rout, tr1, tr2 );
+	//write(*,*)'p1,p2=',p1,p2 
+	if ( caserange == 4 )
+		*pemfind = rootfind( p, p1, p2 );        
+	else
+		*pemfind = Sectionp( p, p1, p2 );
+}
 
 
-static void pemfindcase2( ptcl *p, double *pemfind )
+
+void pemfindcase2( ptcl *p, double *pemfind )
 {
 	double mu1, mu2;
 	double pr, p1, p2, r1;
 	int t1, t2;
 	int tr1, tr2;
 	mutp( p );
+	printf(" pemfindcase2 = %f  %f \n", p->muobs, muup );
 	if ( p->muobs > muup ) {
 		if ( p->f1234[2] > zero || ( p->mobseqmtp && p->muobs == p->mu_tp1 ) ) {
 			t1 = 0;
@@ -339,6 +360,7 @@ static void pemfindcase2( ptcl *p, double *pemfind )
 		}
 	}
 }
+
 
 
 
@@ -697,7 +719,7 @@ static double NewRapson( ptcl *pt, double p1, double p2 )
 	double ptn, dp, f_p, f_pj, dfp, h, temp;
 	double pj;
 	int k;
-	double const kmax = 30, pacc = 1.e-2, EPS = 1.e-5;
+	double const kmax = 30, pacc = 1.e-6, EPS = 1.e-5;
 
         ptn = ( p2 + p1 ) / two;
 	for ( k = 1; k <= kmax; k++ ) {

@@ -267,9 +267,9 @@ int phit_Schwarzschild( ptcl *pt, double p, double *phit_Schwarz,
 				*mucos = cos(u) * muobs;
 				u = fmod( u, twopi );
 				if ( zero <= u && u <= pi )
-					*sign_pth = sign( muobs );
+					*sign_pth = sign( one, muobs );
 				else
-					*sign_pth = - sign( muobs );
+					*sign_pth = - sign( one, muobs );
 
 			} else {
 				u = asin( muobs * AA ) - p * BB * AA;
@@ -469,9 +469,9 @@ static int Get_phit_Schwarzschild( ptcl *pt, double p, double *phit_Schwarz,
 				*mucos = cos(u) * muobs;
 				u = fmod( u, twopi );
 				if ( zero <= u && u <= pi )
-					*sign_pth = sign( muobs );
+					*sign_pth = sign( one, muobs );
 				else
-					*sign_pth = - sign( muobs );
+					*sign_pth = - sign( one, muobs );
 
 			} else {
 				u = asin( muobs * AA ) - p * BB * AA;

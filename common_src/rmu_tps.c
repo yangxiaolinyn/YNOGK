@@ -504,7 +504,7 @@ double mu2p_Schwarzschild( ptcl *p, double mu, int t1, int t2 )
 			else
 				ant =  pp + two * (t1*p1 + t2*p2);           
 		} else
-			ant = sign( -p->f1234[2] )*pp + two * (t1*p1 + t2*p2);
+			ant = sign( one, -p->f1234[2] )*pp + two * (t1*p1 + t2*p2);
 
 	} else {
 		ant = zero;

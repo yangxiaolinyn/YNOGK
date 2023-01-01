@@ -98,6 +98,7 @@ void warpeddisk( ptcl * pt, double mudisk, double rdisk_out )
 	double beta1, gamma0, V_theta, V_phi, theta_dot, phi_dot;
 	double V, phy0, sin_phy0, cos_phy0, V_the_bar, V_phi_bar;
 	double sq_Theta;
+	//double dmu;
 
 	for ( int i = 0; i <= m; i++ ) {
 		beta = pt->betac-i*deltay + 55.0;
@@ -114,7 +115,7 @@ void warpeddisk( ptcl * pt, double mudisk, double rdisk_out )
                         //rin,rout,muup,mudown,phy1,phy2,caserange,Fp,paras,bisection)
 			//printf("pem1 = %f \n", pem);
 			pemfinds( pt, &pem );
-			//printf("pem2 = %f \n", pem);
+			//printf("pem2 = %30.25f \n", pem);
 
 			if ( pem != -one && pem != -two ) {
 				YNOGKC( pt, pem );
@@ -124,12 +125,16 @@ void warpeddisk( ptcl * pt, double mudisk, double rdisk_out )
 					exp( n2 * ( rin - pt->r_p ) / ( rout - rin ) );
 
 				phy0 = atan( tan( pt->phi_p - gamma0 ) * cos( beta1 ) );
-				sin_phy0 = sin(phy0) * sign( sin( pt->phi_p - gamma0 ) );
-				cos_phy0 = cos(phy0) * sign( cos( pt->phi_p - gamma0 ) );
+				sin_phy0 = sign( sin(phy0), sin( pt->phi_p - gamma0 ) );
+				cos_phy0 = sign( cos(phy0), cos( pt->phi_p - gamma0 ) );
 				V = pt->r_p / ( pow( pt->r_p, (three/two) ) + pt->a_spin );
+
+
 				V_theta = V * ( - cos( pt->phi_p - gamma0 ) * cos( beta1 )
 					* sin_phy0 * pt->mu_p + sin( pt->phi_p - gamma0 )
 					* cos_phy0 * pt->mu_p - sin( beta1 ) * sin_phy0 * pt->sin_p );
+ 
+
 				V_phi = V * ( sin( pt->phi_p - gamma0 ) * cos( beta1 )
 					* sin_phy0 + cos( pt->phi_p - gamma0 ) * cos_phy0 );
 
@@ -150,17 +155,15 @@ void warpeddisk( ptcl * pt, double mudisk, double rdisk_out )
 				//dmu = mucos( pt, pem + 1.e-6) - mucos( pt, pem );
 
 				/*g = one / expnu_obs * ( one - pt->lambda * somiga_obs )
-					/ pt->f1234[4] / ut_em / ( one + sq_Theta
-					* sign( - pt->sign_pth_p ) * V_theta / pt->r_p
+					/ pt->f1234[4] / ut_em / ( one + 
+					* sign( sq_Theta, - pt->sign_pth_p ) * V_theta / pt->r_p
 					- pt->lambda * V_phi / pt->sin_p / pt->r_p );*/
-
-				//printf("sign = %f  %f \n", sign(dmu), pt->sign_pth_p );
+ 
 				g = one / expnu_obs * ( one - pt->lambda * somiga_obs )
-					/ pt->f1234[4] / ut_em / ( one + sq_Theta
-					* sign( pt->sign_pth_p ) * V_theta / pt->r_p
+					/ pt->f1234[4] / ut_em / ( one + 
+					sign( sq_Theta, pt->sign_pth_p ) * V_theta / pt->r_p
 					- pt->lambda * V_phi / pt->sin_p / pt->r_p );
-
-
+ 
 				fprintf( fp, "%20.16f \n", g );
 
 			} else {
@@ -180,11 +183,12 @@ void warpeddisk( ptcl * pt, double mudisk, double rdisk_out )
 
 int main( int argc, char *argv[])
 {
-	double a_spin, rini, muobs, sinobs, scal, Vobs[3];
+	double a_spin, rini, muobs, sinobs, scal, Vobs[3], theta_obs;
 	a_spin = 0.9980;
-	rini = 4.e16;
-	muobs = cos( 20.0 * dtor );
-	sinobs = sin( 20.0 * dtor );
+	rini = 4.e10;
+	theta_obs = 60.0;
+	muobs = cos( theta_obs * dtor );
+	sinobs = sin( theta_obs * dtor );
 	scal = 1.0;
 
 	Vobs[0] = zero;

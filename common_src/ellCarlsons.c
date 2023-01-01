@@ -23,12 +23,12 @@ static int elldoublecomplexs( int *index_p5, double f1, double g1, double h1,
 
 
 
-double sign( double x )
+double sign( double y, double x )
 { 
 	if ( x > 0.0 )
-		return 1.0;
+		return fabs(y);
 	else if ( x < 0.0 )
-		return -1.0;
+		return (-fabs(y));
 	else
 		return 0.0;
 }
@@ -84,7 +84,7 @@ int weierstrass_int_J3(double y, double x, double _Complex *bb, int del,
 		inverse=1;
 	}
 
-	sign_h = sign( b44*xt+a44 );
+	sign_h = sign( one, b44*xt+a44 );
 	//printf(" yt =%f xt= %f \n ", yt, xt);
 	//printf("weierstrass_int_J3 = %d case = %d \n", del, cases);
 	if ( del == 3) {
@@ -193,7 +193,7 @@ int carlson_doublecomplex5(double y, double x, double f1, double g1,
 		inverse=1;
 	}
 
-	sign_h = sign( b55 * xt + a55 );
+	sign_h = sign( one, b55 * xt + a55 );
 	a55=sign_h*a55;
 	b55=sign_h*b55;
 	/* equation (77) of Yang & Wang (2012). */

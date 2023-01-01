@@ -186,9 +186,9 @@ double mucos_tmp( ptcl *this, double p )
 					mucos = cos( u ) * muobs;
 					u = fmod(u, twopi);
 					if ( zero <= u && u <= pi )
-						this->sign_pth = sign( muobs );
+						this->sign_pth = sign( one, muobs );
 					else
-						this->sign_pth = - sign( muobs );
+						this->sign_pth = - sign( one, muobs );
 				} else {
 					u = asin( muobs * this->AA ) - p * this->BB * this->AA;
 					/* mucos=dsin(dasin(muobs*this->AA) - 
@@ -596,7 +596,7 @@ double radius_preparation( ptcl *this, double p )
                 t_inf=sqrt((L1-one)/(L1-L2));
 // equation (50) in Yang & Wang (2012). 
                 pinf=EllipticF(tinf,m2)/w/sqrt(L1);
-                sncndn(p*w*sqrt(L1) + sign( f1234r )*pinf*w*sqrt(L1),one-m2, &sn, &cn, &dn);
+                sncndn(p*w*sqrt(L1) + sign( one, f1234r )*pinf*w*sqrt(L1),one-m2, &sn, &cn, &dn);
                 if(f1234r < zero) {
                     PI0=pinf-EllipticF(thorizon,m2)/(w*sqrt(L1));
                     if (p < PI0) 
@@ -1005,7 +1005,7 @@ static double radius_tmp( ptcl *p, double pem )
 		}
 	} else {
 		if ( u != zero ) {
-			sncndn( pem * w * sqrt_L1 + sign( p->f1234[1] ) * 
+			sncndn( pem * w * sqrt_L1 + sign( one, p->f1234[1] ) * 
 				pinf * w * sqrt_L1, one - m2, &sn, &cn, &dn);
 			if( p->f1234[1] < zero ) {
 				if ( pem < PI0 ) 
@@ -1265,7 +1265,7 @@ double r2p( ptcl *p, double rend, int t1, int t2 )
 				}
 
 				if ( p->f1234[1] != zero )
-					ant = sign( - p->f1234[1] ) * pp + 
+					ant = sign( one, - p->f1234[1] ) * pp + 
 						two * ( t1 * p1 + t2 * p2 );
 				else {
 					if ( p->robs == p->r_tp1 )

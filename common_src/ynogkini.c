@@ -515,7 +515,7 @@ void Set_Initializations_For_int_r_part( ptcl * p, double pm,
 			sqrt_L1 = tmp.sqrt_L1;
 			//sncndn(p*w*dsqrt(L1)+dsign(one,f1234r)*&
                          //        pinf*w*dsqrt(L1),one-m2,sn,cn,dn)
-			sncndn( pm * w * sqrt_L1 + sign( p->f1234[1] ) * 
+			sncndn( pm * w * sqrt_L1 + sign( one, p->f1234[1] ) * 
 				pinf * w * sqrt_L1, one - m2, &sn, &cn, &dn);
                         f1 = u2+w2;
                         g1 = -two*u;
@@ -823,7 +823,7 @@ static void Set_Initializations_For_Integrations_of_R_Part( ptcl * p )
 			sqrt_L1 = tmp.sqrt_L1;
 			//sncndn(p*w*dsqrt(L1)+dsign(one,f1234r)*&
                         //	pinf*w*dsqrt(L1),one-m2,sn,cn,dn)
-			//sncndn( pm * w * sqrt_L1 + sign( p->f1234[1] ) * 
+			//sncndn( pm * w * sqrt_L1 + sign( one, p->f1234[1] ) * 
 			//	pinf * w * sqrt_L1, one - m2, &sn, &cn, &dn);
                         f1 = u2+w2;
                         g1 = -two*u;
@@ -1008,7 +1008,7 @@ static void Get_Results_of_Integrations_For_R_Part( ptcl * p, double pm,
 		//printf(" u = %f \n", u);
 		if ( u != zero ) {
 
-			sncndn( pm * w * sqrt_L1 + sign( p->f1234[1] ) * 
+			sncndn( pm * w * sqrt_L1 + sign( one, p->f1234[1] ) * 
 				pinf * w * sqrt_L1, one - m2, &sn, &cn, &dn);
 
 			if ( p->f1234[1] < zero ) {
@@ -1295,9 +1295,9 @@ static void Integral_r_part( ptcl * p, double pm, double *affr, double *timer, d
 	//***************** phi, aff,time part ********************************
 	// equation (56) in Yang & Wang (2013).       
 	if ( p->f1234[1] != zero ) {
-		*phir = sign( -p->f1234[1] ) * pp_phi + two * (t1 * p1_phi + t2 * p2_phi );
-		*timer = fabs( sign( -p->f1234[1] ) * pp_time + two * (t1 * p1_time + t2 * p2_time ) );
-		*affr = sign( -p->f1234[1] ) * pp_aff + two * (t1 * p1_aff + t2 * p2_aff );
+		*phir = sign( one, -p->f1234[1] ) * pp_phi + two * (t1 * p1_phi + t2 * p2_phi );
+		*timer = fabs( sign( one, -p->f1234[1] ) * pp_time + two * (t1 * p1_time + t2 * p2_time ) );
+		*affr = sign( one, -p->f1234[1] ) * pp_aff + two * (t1 * p1_aff + t2 * p2_aff );
 		//printf("pp_time = %f  %f  %f \n t1 = %d \n t2 = %d \n", pp_time, p1_time, p2_time, t1, t2 );
 		//printf("pp_aff = %f  %f  %f  \n", pp_aff, p1_aff, p2_aff );
 	} else {

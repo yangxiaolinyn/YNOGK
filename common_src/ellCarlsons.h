@@ -26,7 +26,7 @@
 #include "ellfunctions.h"
 
 
-double sign( double x );
+double sign( double y, double x );
 
 /*int elldoublecomplexs( int *index_p5, double f1, double g1, double h1, 
 		double f2, double g2, double h2, double a5, double b5,

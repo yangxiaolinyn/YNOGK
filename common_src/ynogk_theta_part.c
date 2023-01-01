@@ -118,7 +118,7 @@ int Integration_Theta_part( ptcl *pt, double p, double *phit, double *timet,
 
 	if ( pt->f1234[3] == zero && pt->f1234[2] == zero && fabs( muobs ) == one) {
 		*sign_pth = zero;
-		*mucos = sign( muobs );
+		*mucos = sign( one, muobs );
 		*timet = zero;             // this is because that mu==1 for ever
 		*phit = zero;              // this is because that mu==1 for ever,this
 		return 0;                    // because that Theta_mu=-a^2(1-mu^2), 
@@ -586,7 +586,7 @@ int Get_Integrations_of_Theta_part( ptcl *pt, double p, double *phit, double *ti
 	*tm2 = 0;
 	if ( pt->f1234[3] == zero && pt->f1234[2] == zero && fabs( muobs ) == one) {
 		*sign_pth = zero;
-		*mucos = sign( muobs );
+		*mucos = sign( one, muobs );
 		*timet = zero;             // this is because that mu==1 for ever
 		*phit = zero;              // this is because that mu==1 for ever,this
 		return 0;                    // because that Theta_mu=-a^2(1-mu^2), 
