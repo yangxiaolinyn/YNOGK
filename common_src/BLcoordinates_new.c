@@ -1136,6 +1136,7 @@ double r2p( ptcl *p, double rend, int t1, int t2 )
 
 	radiustp( p );
 
+	//printf(" r2p = %d  %d %d \n", p->r_reals, p->cases, p->indrhorizon );
 	if (p->r_reals != 0 ) {
 		if ( rend < p->r_tp1 || rend > p->r_tp2 )
 			return (-one);
@@ -1224,6 +1225,7 @@ double r2p( ptcl *p, double rend, int t1, int t2 )
 							p->cases_int );
 						ant = integ04[1];
 					}
+					//printf(" pr = %f  %f %f \t \n  ", integ04[1], p->tinf, p->thorizon );
 				} else {
 					if ( rend < infinity ) {
 						weierstrass_int_J3( p->tinf, p->tp, 
@@ -1360,6 +1362,7 @@ double r2p( ptcl *p, double rend, int t1, int t2 )
 		w2 = w * w;
 		v = fabs( cimag( p->rbb[2] ) );
 		v2 = v * v;
+		//printf(" p2r = %f  %f  %f\n", u, w, v);
 		if ( u != zero ) {
 			// equation (45) in Yang & Wang (2012). 
 			L1 = ( four * u2 + w2 + v2 + sqrt( sq( four*u2 + w2 + v2 )
@@ -1370,27 +1373,32 @@ double r2p( ptcl *p, double rend, int t1, int t2 )
 			p->thorizon = sqrt( ( L1-one ) / ( L1 - L2 ) )
 				* ( p->rhorizon - u * ( L1 + one ) / ( L1 - one ) )
 				/ sqrt( sq( p->rhorizon - u ) + w2 );
+                	p->tp = sqrt( ( L1 - one ) / ( L1 - L2 ) )
+				* ( rend - u * ( L1 + one ) / ( L1 - one ) )
+				/ sqrt( sq( rend - u ) + w2 );
 			// equation (48) in Yang & Wang (2012). 
-			m2 = ( L1-L2 ) / L1;
+			m2 = ( L1 - L2 ) / L1;
 			p->tinf = sqrt( ( L1 - one ) / ( L1 - L2 ) )
 				* ( p->robs - u * ( L1 + one ) / ( L1 - one ) )
 				/ sqrt( sq( p->robs-u ) + w2);
 			p->t_inf = sqrt( ( L1 - one ) / ( L1 - L2 ) );
 			// equation (50) in Yang & Wang (2012).
-			sqrt_L1 = sqrt(L1);
+			sqrt_L1 = sqrt( L1 );
 			pinf = EllipticF( p->tinf, m2 ) / w / sqrt_L1;
 			if( p->f1234[1] < zero ) {
 				if ( rend <= p->rhorizon )
 					ant = pinf - EllipticF( p->thorizon, m2 )
-						/ ( w * sqrt( L1 ) );
-				else
+						/ ( w * sqrt_L1 );
+				else {
 					ant = pinf - EllipticF( p->tp, m2)
-						/ ( w * sqrt( L1 ) );
+						/ ( w * sqrt_L1 );
+					//printf(" p2r3 = %f  %f \n", pinf, EllipticF( p->tp, m2) / ( w * sqrt_L1 ) );
+				}
 			} else {
 				if ( rend < infinity )
-					ant = EllipticF( p->tp, m2 ) / ( w * sqrt( L1 ) ) - pinf;
+					ant = EllipticF( p->tp, m2 ) / ( w * sqrt_L1 ) - pinf;
 				else
-					ant = EllipticF( p->t_inf, m2 ) / ( w * sqrt( L1 ) ) - pinf;
+					ant = EllipticF( p->t_inf, m2 ) / ( w * sqrt_L1 ) - pinf;
 			}
 		} else {
 			if ( p->f1234[1] < zero )

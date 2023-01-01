@@ -92,7 +92,7 @@ void warpeddisk( ptcl * pt, double mudisk, double rdisk_out )
 
 	FILE *fp = fopen("./plot/warpdiskg.txt", "w"); 
 
-	set_parameters( rin, rout, one, -one, zero, twopi, bisection, caserange, 200 );
+	set_parameters( rin, rout, one, -one, zero, twopi, bisection, caserange, 40 );
 	
 
 	double beta1, gamma0, V_theta, V_phi, theta_dot, phi_dot;
@@ -103,7 +103,7 @@ void warpeddisk( ptcl * pt, double mudisk, double rdisk_out )
 	for ( int i = 0; i <= m; i++ ) {
 		beta = pt->betac-i*deltay + 55.0;
 		Set_beta( pt, beta );
-		//printf("i = %d \t %f \n", i, beta);
+		printf("i = %d \t %f \n", i, beta);
 		for ( int j = 0; j <= m; j++ ) {
 			alpha = pt->alphac - j * deltax + 55.0;
 			Set_alpha( pt, alpha );
@@ -186,7 +186,7 @@ int main( int argc, char *argv[])
 	double a_spin, rini, muobs, sinobs, scal, Vobs[3], theta_obs;
 	a_spin = 0.9980;
 	rini = 4.e10;
-	theta_obs = 60.0;
+	theta_obs = 0.0;
 	muobs = cos( theta_obs * dtor );
 	sinobs = sin( theta_obs * dtor );
 	scal = 1.0;

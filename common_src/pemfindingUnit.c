@@ -132,9 +132,14 @@ void pemfinds( ptcl *p, double *pemfind )
 {
 	//paras = parass;
 
-	NN = 20;
 	int cases;
 	radiustp( p );
+
+	if ( p->r_tp1 < 10.0*p->rhorizon )
+		NN = 200;
+	else
+		NN = 30;
+
 
 	if ( rin > p->rhorizon ) {
 		if( p->r_tp1 >= rout )
@@ -174,10 +179,8 @@ void pemfinds( ptcl *p, double *pemfind )
 			break;
 		case 4:
 			do {
-				//printf(" pfind1 = %f   NN = %d \n", *pemfind, NN );
+				//printf("pem1 cases = %d  %f \n", NN, *pemfind);
 				pemfindcase4( p, pemfind );
-				if ( NN > 20000 )exit(0);
-				//printf(" pfind2 = %f   NN = %d \n", *pemfind, NN );
 				if ( *pemfind > zero || *pemfind == -one || *pemfind == -two ) break;
 				NN = NN * 2;
 			} while (1);
@@ -205,7 +208,7 @@ static void pemfindcase2new( ptcl *p, double *pemfind )
 	p1 = r2p( p, rout, tr1, tr2 );
 	tr1 = 1;
 	p2 = r2p( p, rout, tr1, tr2 );
-	//write(*,*)'p1,p2=',p1,p2 
+
 	if ( caserange == 4 )
 		*pemfind = rootfind( p, p1, p2 );        
 	else
@@ -403,6 +406,7 @@ static void pemfindcase4( ptcl *p, double *pemfind )
 	tr2 = 0;
 	p1 = r2p( p, rout, tr1, tr2 );
 	p2 = r2p( p, rin, tr1, tr2 );
+
 
 	if ( caserange == 4 ) {
 		//printf("pemfindcase4 = %f  %f \n", p1, p2);
