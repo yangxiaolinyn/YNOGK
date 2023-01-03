@@ -70,7 +70,7 @@ void warpeddisk( ptcl * pt, double mudisk, double rdisk_out )
 	center_of_image( pt );
 	printf( " beta c = %f \t alphac = %f \n", pt->betac, pt->alphac );
 
-	m = 400;
+	m = 800;
 	deltax = 110.0 / m;
 	deltay = 110.0 / m;
 
@@ -103,7 +103,7 @@ void warpeddisk( ptcl * pt, double mudisk, double rdisk_out )
 	for ( int i = 0; i <= m; i++ ) {
 		beta = pt->betac-i*deltay + 55.0;
 		Set_beta( pt, beta );
-		printf("i = %d \t %f \n", i, beta);
+		printf("i = %d \t  beta = %f \n", i, beta);
 		for ( int j = 0; j <= m; j++ ) {
 			alpha = pt->alphac - j * deltax + 55.0;
 			Set_alpha( pt, alpha );

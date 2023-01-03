@@ -30,6 +30,7 @@ static double phy1, phy2;
 //static double oricosth;
 static int bisection, caserange;
 static int NN;
+static double last_pem;
 
 
 void pemfindcase2( ptcl *p, double *pemfind );
@@ -39,6 +40,7 @@ static void pemfindcase5( ptcl *p, double *pemfind );
 static void pemfindcase2new( ptcl *p, double *pemfind );
 static double Sectionp( ptcl *pt, double p1, double p2 );
 static double rootfind( ptcl *p, double p1, double p2 );
+double rootfindnew( ptcl *pt, double p1, double p2 );
 static double Bisectionp( ptcl *pt, double p1, double p2 );
 static double NewRapson( ptcl *pt, double p1, double p2 );
 
@@ -57,7 +59,8 @@ void set_parameters( double rins, double routs, double muups, double mudowns,
 	phy2 = phy2s;
 	bisection = bisections;
 	caserange = caseranges;
-	NN = NNs;	
+	NN = NNs;
+	last_pem = zero;	
 }
 
 
@@ -193,6 +196,7 @@ void pemfinds( ptcl *p, double *pemfind )
 			} while (1);
 			break;
 	}
+	last_pem = *pemfind;
 } 
 
 
@@ -582,9 +586,13 @@ double Sectionp( ptcl *pt, double p1s, double p2s )
 !*/
 static double rootfind( ptcl *pt, double p1, double p2 )
 {
-	double rtfd, deltap, p, f_p, sp1, sp2;;
+	double rtfd, deltap, p, f_p, sp1, sp2;
 	//double const dp = 1.e-5;
 	int NNf, k;
+
+	//if ( last_pem != zero && last_pem != -one && last_pem != -two )
+	//	rootfindnew( pt, p1, p2 );
+
  
         //p1 = p1 + dp
 	deltap = ( p2 - p1 ) / NN;
@@ -642,6 +650,62 @@ static double rootfind( ptcl *pt, double p1, double p2 )
 	}
         return rtfd;
 }
+
+/*
+!*
+!*
+!*     C VERSION:  Yang Xiao-lin    2023-01-02.
+!*
+!*/
+double rootfindnew( ptcl *pt, double p1, double p2 )
+{
+	double rtfd, sp1, sp2;
+	double deltap, padd, pdown;
+	double f_p_last, f_p_add, f_p_down;
+	int k;
+
+	deltap = ( p2 - p1 ) / NN;
+
+	f_p_last = Fp( pt, last_pem );
+	
+	k = 1;
+	do {
+		padd = last_pem + k * deltap;
+		pdown = last_pem - k * deltap;;
+		f_p_add = Fp( pt, padd );
+		f_p_down = Fp( pt, pdown );
+		k++;
+		if( f_p_add * f_p_last < zero ) {
+			sp1 = padd - deltap;
+			sp2 = padd;
+			break;
+		} else if( f_p_down * f_p_last < zero ) {
+			sp1 = pdown;
+			sp2 = pdown + deltap;
+			break;
+		}
+
+		if ( k >= NN )
+			break;
+	} while (1);
+
+	if (k < NN ) {
+		// Using bisection or Newton Raphson method to 
+		// find roots on interval (sp1, sp2).   
+		if ( bisection )
+			rtfd = Bisectionp( pt, sp1, sp2 );
+		else {
+			rtfd = NewRapson( pt, sp1, sp2 );
+		}
+
+	} else {
+		// On interval (p1, p2) no roots are found!
+		rtfd = - 1.0;
+	}
+        return rtfd;
+}
+
+
 
 
 
