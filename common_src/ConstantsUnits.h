@@ -50,8 +50,8 @@
 #define infinity 1.e100 
 #define Boltzman_k_ergK 1.380662e-16
 #define Boltzman_k_evK 1.380662e-16 / 1.6021892e-12
-#define dtors 3.14159265358979323848280/180.0
-#define dtor 3.14159265358979323848280/180.0
+#define dtors (3.14159265358979323848280/180.0)
+#define dtor (3.14159265358979323848280/180.0)
 #define mh 1.6726231e-24
 #define mp 1.6726485e-24
 #define hbar 1.0545887e-27    // h / 2 pi

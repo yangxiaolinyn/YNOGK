@@ -50,13 +50,14 @@ double rf(double x, double y, double z)
 		printf("x = %f \n y = %f \n z = %f \n ", x, y, z);
 	}*/
 
-	if (x < zero) x = zero;
-	if (y < zero) y = zero;
-	if (z < zero) z = zero;
-
 	xt = x;
 	yt = y;
 	zt = z;
+
+	if (xt < zero) xt = zero;
+	if (yt < zero) yt = zero;
+	if (zt < zero) zt = zero;
+
 	do {
 		sqrtx = sqrt(xt);
 		sqrty = sqrt(yt);

@@ -152,7 +152,7 @@ static void Get_tm1_tm2_New( double p, double PI1, double PI2, double Pt,
 !*
 !*/
 /*************************************************************************/
-static double Schwarz_integral( double y, double x, double AA ) 
+double Schwarz_integral( double y, double x, double AA ) 
 /*************************************************************************/ 
 {
 	double yt, xt, schwatz_int, ppx, ppy, A2;

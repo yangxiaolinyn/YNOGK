@@ -414,6 +414,7 @@ int ellcubiccomplexs(int *index_p4, double a1, double b1, double a4, \
 		/* (1.2) Carlson (1991) */
 		rff = rf(M2,Lm2,Lp2);
 		integ[1] = four * rff;
+		//printf( " rff = %f \n  M2 = %f \n  Lm2 = %f \n Lp2 = %f \n ", rff, M2, Lm2, Lp2 );
 		if ( cases == 1 ) return 0;
 	} else
 		rff = rff_p / four;

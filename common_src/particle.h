@@ -154,6 +154,8 @@ typedef struct {
 	double mu_tp1;
 	double mutp2;    /* mutp2 = mu_tp1^2. */
 	double mutp3;    /* mutp3 = mu_tp1^3. */
+	double mu_tp12;    /* mu_tp12 = mu_tp1^2. */
+	double mu_tp13;    /* mu_tp13 = mu_tp1^3. */
 	double mu_tp2;
 	unsigned int mu_reals;
 	int mobseqmtp;
