@@ -63,6 +63,7 @@ int main( int argc, char *argv[])
 	double phyt, timet, sigmat, mut, sin_theta;
 	double kp, kt;
 	double rmin, rmax;
+	int t1, t2;
 
 	kp = one;
 	kt = one;
@@ -76,14 +77,14 @@ int main( int argc, char *argv[])
 			for ( int k = 0; k <= 20000; k++ ) {
 				p = k * deltap;
 				YNOGK_sphmotion( pt, p, theta_max, kp, 
-					kt, &phyt, &timet, &sigmat, &mut, &sin_theta );
-				//printf(" r = %f  %f  %f  %f  %f \n", phyt, timet, sigmat, mut, sin_theta);
-				if ( ra >= pt->rhorizon*0.99 ) {
+					kt, &phyt, &timet, &sigmat, &mut, &sin_theta, &t1, &t2 );
+					//printf(" r1 = %d  %f%f  %f  %f  %f  %f \n", k, ra, phyt, 
+					//	timet, sigmat, mut, sin_theta); 
+ 
 					xcc = sqrt( ra2 + pt->a2 ) * sin_theta * cos(phyt);
 					ycc = sqrt( ra2 + pt->a2 ) * sin_theta * sin(phyt);
 					zcc = sqrt( ra2 + pt->a2 ) * mut;
 					fprintf( fp, "%20.16f %20.16f %20.16f \n", xcc, ycc, zcc );
-				}
 			}
 		}
 	}

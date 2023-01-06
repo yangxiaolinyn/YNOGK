@@ -190,9 +190,9 @@ ax.plot(xn, zn, ':', c = 'blue', linewidth = 0.5 )
 #ax.text(xp[300], zp[300], r"equatorial plane", fontsize = 10, fontdict=font2)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#plt.show() 
+#plt.show()
 
-fig.savefig('fig4.eps', dpi=120, bbox_inches = 'tight')
+fig.savefig('fig5.eps', dpi=120, bbox_inches = 'tight')
 
 
 

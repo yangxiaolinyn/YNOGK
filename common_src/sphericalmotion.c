@@ -45,9 +45,9 @@ static double Omega, c_tau;
 
 static double radiusofsphericalmotion( double a, double c );
 static double mveone_int( double x, double y, double z0 );
-static void SPINZERO(ptcl *pt, double p, double kp, double kt, double theta_max, 
-		double phyt, double timet, double sigmat,
-		double mucos, int t1, int t2 );
+static void SPINZERO( ptcl *pt, double p, double kp, double kt, double theta_max, 
+		double *phyt, double *timet, double *sigmat,
+		double *mucos, int *t1, int *t2 );
 
 
 
@@ -93,7 +93,8 @@ static double thetamax_1;
 !*
 !*/
 void SPHERICALMOTION_BL( ptcl *pt, double p, double theta_max, double kp, 
-	double kt, double *phyt, double *timet, double *sigmat, double *mucos )
+	double kt, double *phyt, double *timet, double *sigmat, 
+	double *mucos, int *tt1, int *tt2 )
 {
 	double p1, p2, pp, p_mu = zero;
 	double pp_sig, pp_t, p1_t, p1_sig, p1_phi;
@@ -150,7 +151,7 @@ void SPHERICALMOTION_BL( ptcl *pt, double p, double theta_max, double kp,
 
 	if ( pt->a_spin == zero ) {
 		*timet = zero;
-		SPINZERO( pt, p, kp, kt, theta_max, *phyt, *timet, *sigmat, *mucos, t1, t2);
+		SPINZERO( pt, p, kp, kt, theta_max, phyt, timet, sigmat, mucos, tt1, tt2);
 		count_num ++;
 		return;
 	}
@@ -510,8 +511,8 @@ static void Spherical_motion_Settings( ptcl *pt, double theta_max, double kt )
 !*
 !*
 !*/
-void Get_Sphmot_Results( ptcl *pt, double p, double theta_max, double kp, double kt, double *phyt,
-	double *timet, double *sigmat, double *mucos )
+static void Get_Sphmot_Results( ptcl *pt, double p, double theta_max, double kp, double kt, double *phyt,
+	double *timet, double *sigmat, double *mucos, int *tt1, int *tt2 )
 {
 	double p1, p2, pp, p_mu = zero;
 	double pp_sig, pp_t, p1_t, p1_sig, p1_phi;
@@ -528,13 +529,15 @@ void Get_Sphmot_Results( ptcl *pt, double p, double theta_max, double kp, double
 		*phyt = p;
 		*timet = (*phyt) / Omega;
 		*sigmat = c_tau * (*timet);
+		*tt1 = 0;
+		*tt2 = 0;
 		return;
 	}
 
 
 	if ( pt->a_spin == zero ) {
 		*timet = zero;
-		SPINZERO( pt, p, kp, kt, theta_max, *phyt, *timet, *sigmat, *mucos, t1, t2);
+		SPINZERO( pt, p, kp, kt, theta_max, phyt, timet, sigmat, mucos, tt1, tt2 );
 		return;
 	}
 
@@ -712,6 +715,8 @@ gooutfor:
 	if ( pt->mu_tp1 == one ) *phyt = *phyt + ( t1 + t2) * pi;
 	// phyt = fmod(phyt, twopi);
 	// if ( phyt < zero ) phyt = phyt + twopi;
+	*tt1 = t1;
+	*tt2 = t2;
 }
 
 
@@ -820,7 +825,11 @@ void lambdaq_sphericalm( ptcl *pt, double r_sm, double *theta_min, double *rmin,
 		* ( mutp2 + one ) - sq( pt->a2 ) * mutp2 );
 	AE = Delta * ( r_sm2 - pt->a2 * mutp2 );
 
-	pt->lambda = sign( one, pt->a_spin ) * sqrt( sintp2 * AL / AE );
+	if ( pt->a_spin != zero )
+		pt->lambda = sign( one, pt->a_spin ) * sqrt( sintp2 * AL / AE );
+	else
+		pt->lambda = sqrt( sintp2 * AL / AE );
+
 	pt->lam2 = sq( pt->lambda );
 	pt->q = mutp2 * ( AL / AE - pt->a2 );
 	//printf("AL AE = %f %f %f \n", AL, AE, Delta);
@@ -933,9 +942,9 @@ static double mveone_int( double x, double y, double z0 )
 !*
 !*
 !*/
-static void SPINZERO(ptcl *pt, double p, double kp, double kt, double theta_max, 
-		double phyt, double timet, double sigmat,
-		double mucos, int t1, int t2 )
+static void SPINZERO( ptcl *pt, double p, double kp, double kt, double theta_max, 
+		double *phyt, double *timet, double *sigmat,
+		double *mucos, int *tt1, int *tt2 )
 {
 	double pp_sigma, pp_time, pp_phi;
 	double p1_sigma, p1_time, p1_phi;
@@ -945,6 +954,7 @@ static void SPINZERO(ptcl *pt, double p, double kp, double kt, double theta_max,
 		PI2_time, PI1_sigma, PI2_sigma;
 	double p_mu = zero, Ptotal, PI1, PI2;
 	double pp, p1, p2;
+	int t1, t2;
 
 	t1 = 0;
 	t2 = 0;
@@ -965,7 +975,7 @@ static void SPINZERO(ptcl *pt, double p, double kp, double kt, double theta_max,
 			else			      
 				mu = sin( asin( pt->muobs * AA ) + p * AA * BB ) / AA;
 		}
-		mucos = mu;
+		*mucos = mu;
 
 		if ( kt != zero ) {
 			pt->mu_tp1 = sqrt( pt->q / ( pt->lam2 + pt->q ) );
@@ -980,9 +990,11 @@ static void SPINZERO(ptcl *pt, double p, double kp, double kt, double theta_max,
 		if ( pt->mu_tp1 == zero ) {
 			// photons are confined in the equatorial plane, 
 			// so the integrations about !\theta are valished.
-			timet = zero;
-			sigmat = zero;
-			phyt = zero;
+			*timet = zero;
+			*sigmat = zero;
+			*phyt = zero;
+			*tt1 = 0;
+			*tt2 = 0;
 			return;
 		}
 
@@ -1040,6 +1052,7 @@ temp_one:
 		pp_time = pp_sigma + c_time * pp;
 		pp_phi = pt->lambda * Schwarz_integral( pt->muobs, mu, AA ) / BB + c_phi * pp;
 
+
 		// *************** p1 part *************** !
 		if ( t1 == 0 ) {
 			p1_sigma = zero;
@@ -1084,41 +1097,46 @@ temp_one:
 		if ( pt->mobseqmtp ) {
 			if ( pt->muobs == pt->mu_tp1 ) {
 				// equations (52) of Yang and Wang (2013).	
-		              sigmat = -pp_sigma+two*(t1*p1_sigma+t2*p2_sigma);
-		              timet = -pp_time+two*(t1*p1_time+t2*p2_time);
-		              phyt = -pp_phi+two*(t1*p1_phi+t2*p2_phi);
+				*sigmat = -pp_sigma+two*(t1*p1_sigma+t2*p2_sigma);
+				*timet = -pp_time+two*(t1*p1_time+t2*p2_time);
+				*phyt = -pp_phi+two*(t1*p1_phi+t2*p2_phi);
 			} else {
 				// equations (52) of Yang and Wang (2013).	
-		              sigmat = pp_sigma+two*(t1*p1_sigma+t2*p2_sigma);
-		              timet = pp_time+two*(t1*p1_time+t2*p2_time);
-		              phyt = pp_phi+two*(t1*p1_phi+t2*p2_phi);
+				*sigmat = pp_sigma+two*(t1*p1_sigma+t2*p2_sigma);
+				*timet = pp_time+two*(t1*p1_time+t2*p2_time);
+				*phyt = pp_phi+two*(t1*p1_phi+t2*p2_phi);
 			} 
 		} else {
 		         if ( kt < zero ) {
 				// equations (52) of Yang and Wang (2013).	
-		              sigmat = pp_sigma+two*(t1*p1_sigma+t2*p2_sigma);
-		              timet = pp_time+two*(t1*p1_time+t2*p2_time);
-		              phyt = pp_phi+two*(t1*p1_phi+t2*p2_phi);
+		              *sigmat = pp_sigma+two*(t1*p1_sigma+t2*p2_sigma);
+		              *timet = pp_time+two*(t1*p1_time+t2*p2_time);
+		              *phyt = pp_phi+two*(t1*p1_phi+t2*p2_phi);
 			}
 			if (kt > zero) {
 				// equations (52) of Yang and Wang (2013).	
-		              sigmat = -pp_sigma+two*(t1*p1_sigma+t2*p2_sigma);
-		              timet = -pp_time+two*(t1*p1_time+t2*p2_time);
-		              phyt = -pp_phi+two*(t1*p1_phi+t2*p2_phi);
+		              *sigmat = -pp_sigma+two*(t1*p1_sigma+t2*p2_sigma);
+		              *timet = -pp_time+two*(t1*p1_time+t2*p2_time);
+		              *phyt = -pp_phi+two*(t1*p1_phi+t2*p2_phi);
 			}
 		}
+
+		*tt1 = t1;
+		*tt2 = t2;
 		if ( theta_max == zero || theta_max == 180.0 )
-			phyt = phyt + ( t1 + t2) * pi;
+			*phyt = *phyt + ( t1 + t2) * pi;
 	} else {
 		printf(" phyt_schwatz(): q<0, which is a affending value, \
 			the program should be stoped! and q = %f\n ", pt->q );
 		exit(0);
-		mucos = pt->muobs;
+		*mucos = pt->muobs;
 		t1 = 0;
 		t2 = 0;
-		phyt = zero;
-		timet = zero;
-		sigmat = zero;
+		*phyt = zero;
+		*timet = zero;
+		*sigmat = zero;
+		*tt1 = t1;
+		*tt2 = t2;
 	}
 }
 
@@ -1133,7 +1151,7 @@ temp_one:
 !*/
 void YNOGK_sphmotion( ptcl *pt, double p, double theta_max, double kp, 
 	double kt, double *phyt, double *timet, double *sigmat, 
-	double *mucos, double *sint )
+	double *mucos, double *sint, int *t1, int *t2 )
 {
 	static unsigned int count_num = 1;
  
@@ -1152,12 +1170,11 @@ sphm_restarting:
 		a_spin_1 = pt->a_spin;
 		robs_1 = pt->robs;
 		thetamax_1 = theta_max;
-
+ 
 		Get_Sphmot_Results( pt, p, theta_max, kp, kt, phyt,
-				timet, sigmat, mucos );
+				timet, sigmat, mucos, t1, t2 );
 
-		*sint = sqrt( one - sq( *mucos ) );
-		//printf( "phir = %f timer = %f affr = %f \n", *phir, *timer, *affr );
+		*sint = sqrt( one - sq( *mucos ) ); 
 
     	} else {
 		if ( kp_1 == kp &&
@@ -1171,7 +1188,7 @@ sphm_restarting:
 		thetamax_1 == theta_max ) {
  
 			Get_Sphmot_Results( pt, p, theta_max, kp, kt, phyt,
-					timet, sigmat, mucos );
+					timet, sigmat, mucos, t1, t2 );
 			*sint = sqrt( one - sq( *mucos ) );
 
 		} else {
