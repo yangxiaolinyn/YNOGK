@@ -123,7 +123,7 @@ void sncndn(double uu, double emmc, double *sn, double *cn, double *dn)
 		}
 		a = 1.0;
 		*dn = 1.0;
-		for ( i=1; i<=19; i++ ) {
+		for ( i=1; i<=13; i++ ) {
 			l = i;
 			em[i] = a;
 			en[i] = (emc = sqrt(emc));
